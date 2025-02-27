@@ -1,11 +1,11 @@
-import { useEffect } from "react";
-import { Link } from "react-router-dom";
-import "./NotFound.scss";
+import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import './NotFound.scss';
 
 const NotFound = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = "Not Found 404 | OKBF";
+    document.title = 'Not Found 404 | OKBF';
   }, []);
 
   return (
@@ -21,7 +21,7 @@ const NotFound = () => {
             </p>
 
             <div className="button-group">
-              <Link to="/collections" className="theme-btn__black">
+              <Link to="/" className="theme-btn__black">
                 Continue shopping
               </Link>
             </div>
