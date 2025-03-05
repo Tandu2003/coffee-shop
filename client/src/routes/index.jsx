@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import Home from '../Pages/Home';
 import NotFound from '../Pages/NotFound';
 import Policies from '../Pages/Policies';
+import Login from '../Pages/Login';
 
 const RouterApp = () => {
   // public methods
@@ -11,6 +12,10 @@ const RouterApp = () => {
     {
       path: '/pages/terms-conditions',
       element: <Policies title={'Terms Conditions'} />,
+    },
+    {
+      path: '/login',
+      element: <Login />,
     },
     { path: '*', element: <NotFound /> },
   ];
