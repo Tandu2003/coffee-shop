@@ -1,10 +1,10 @@
 import { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-import Breadcrumb from '../../Components/Breadcrumb';
-import AuthContext from '../../src/Context/AuthProvider';
 import './login.scss';
-import { Auth } from '../../src/Api/auth';
+import { Auth } from '../../Api/auth';
+import Breadcrumb from '../../Components/Breadcrumb';
+import AuthContext from '../../Context/AuthProvider';
 
 const Login = () => {
   const { setAuth } = useContext(AuthContext);
@@ -41,7 +41,7 @@ const Login = () => {
     try {
       setPost('Loading.....');
       const result = await Auth.signup(newAccount);
-      setPost(result);
+      setPost(result?.message);
     } catch (error) {
       setPost(error);
     }
@@ -50,7 +50,7 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     const account = {
-      username,
+      identifier: username,
       password,
       remember,
     };
@@ -219,15 +219,9 @@ const Login = () => {
                         </div>
                         <div className="form-group">
                           <p
-                            style={
-                              post.search('successfully') === -1
-                                ? {
-                                    color: 'red',
-                                  }
-                                : {
-                                    color: 'green',
-                                  }
-                            }
+                            style={{
+                              color: 'green',
+                            }}
                           >
                             {post}
                           </p>
