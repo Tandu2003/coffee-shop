@@ -24,7 +24,7 @@ import threeWeek from '../../Assets/svg/every-three-weeks.svg';
 import twoWeek from '../../Assets/svg/every-two-weeks.svg';
 import everyWeek from '../../Assets/svg/every-week.svg';
 import coffeeCup from '../../Assets/svg/coffeeCup.svg';
-import { ProductApi } from '../../src/Api/product';
+// import { ProductApi } from '../../src/Api/product';
 
 const CoffeeClub = () => {
   const [products, setProducts] = useState([]);
@@ -182,9 +182,8 @@ const CoffeeClub = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const result = await ProductApi.getAllProducts();
-
-        setProducts(result);
+        // const result = await ProductApi.getAllProducts();
+        // setProducts(result);
       } catch (error) {
         console.error('Error:', error);
       }
