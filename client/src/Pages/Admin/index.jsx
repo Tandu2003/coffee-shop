@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import './Admin.scss';
-import Breadcrumb from '../../src/Components/Breadcrumb';
 import { Link, useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
-import AuthContext from '../../src/Context/AuthProvider';
-import { Auth } from '../../src/Api/auth';
+import AuthContext from '../../Context/AuthProvider';
+import { Auth } from '../../Api/auth';
+import Breadcrumb from '../../Components/Breadcrumb';
 
 const Admin = () => {
   const { setAuth } = useContext(AuthContext);

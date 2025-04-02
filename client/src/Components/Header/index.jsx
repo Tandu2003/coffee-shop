@@ -82,7 +82,7 @@ const Header = () => {
     e.preventDefault();
 
     const account = {
-      username,
+      identifier: username,
       password,
       remember,
     };
