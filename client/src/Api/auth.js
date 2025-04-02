@@ -11,7 +11,7 @@ const login = async (account) => {
 };
 
 const logout = async () => {
-  const res = await api.get('auth/logout');
+  const res = await api.post('auth/logout');
   return res.data;
 };
 
