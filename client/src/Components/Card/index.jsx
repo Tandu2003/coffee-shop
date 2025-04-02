@@ -5,7 +5,7 @@ import iconCart from '../../Assets/svg/iconCart.svg';
 import iconHeart from '../../Assets/svg/iconHeart.svg';
 import './Card.scss';
 import { useContext } from 'react';
-import AuthContext from '../../../store/Context/AuthProvider';
+import AuthContext from '../../Context/AuthProvider';
 
 const Card = ({
   title,

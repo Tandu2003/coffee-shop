@@ -25,6 +25,9 @@ import qualityCup from '../../Assets/svg/qualityCup.svg';
 import calculator from '../../Assets/svg/calculator.svg';
 import handCrafted from '../../Assets/svg/handCrafted.svg';
 
+import Card from '../../Components/Card';
+import { ProductApi } from '../../Api/product';
+
 const Home = () => {
   SwiperCore.use([Autoplay]);
 
@@ -38,6 +41,7 @@ const Home = () => {
   const [data, setData] = useState({});
   const [valid, setValid] = useState();
   const [email, setEmail] = useState();
+  const [fetchProducts, setFetchProducts] = useState();
 
   const handleOnChange = (e) => {
     const name = e.target.name;
@@ -124,6 +128,31 @@ const Home = () => {
     document.title =
       'Buy Organic & Roasted Coffee Beans Online | 100% Arabica | OKBF';
   }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const result = await ProductApi.getAllProducts();
+        setFetchProducts(result);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const listProducts = fetchProducts?.map((products, index) => {
+    return (
+      <SwiperSlide key={index}>
+        <Card
+          img={products.imageDisplay}
+          title={products.name}
+          price={products.price}
+          newBadge={products.newBadge}
+        />
+      </SwiperSlide>
+    );
+  });
 
   return (
     <>
@@ -225,6 +254,29 @@ const Home = () => {
                 <Link to="/pages/about-us" className="theme-btn__black">
                   Learn More
                 </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section className="home-product">
+          <div className="container">
+            <div className="product-wrapper">
+              <div className="title-wrapper product-title">
+                <h2 className="title">Our Products</h2>
+              </div>
+              <div className="slice-wrapper">
+                <Swiper
+                  slidesPerView={width > 992 ? 3 : width > 426 ? 2 : 1}
+                  spaceBetween={30}
+                  loop={width > 992 ? false : true}
+                  loopFillGroupWithBlank={width > 992 ? false : true}
+                  pagination={{
+                    clickable: true,
+                  }}
+                  modules={[Pagination]}
+                >
+                  {listProducts}
+                </Swiper>
               </div>
             </div>
           </div>

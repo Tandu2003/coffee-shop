@@ -1,7 +1,7 @@
 import { useContext, useEffect } from 'react';
-import AuthContext from '../../src/Context/AuthProvider';
-import CheckLoggedIn from '../../src/utils/loggedIn';
+import CheckLoggedIn from '../../utils/loggedIn';
 import './Account.scss';
+import AuthContext from '../../Context/AuthProvider';
 
 const Account = () => {
   const { auth, setAuth } = useContext(AuthContext);
