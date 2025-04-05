@@ -53,6 +53,12 @@ const Admin = () => {
                   <Link to="/admin/account-management">Account Management</Link>
                 </li>
                 <li className="item">
+                  <Link to="/admin/reports">Reports & Analytics</Link>
+                </li>
+                <li className="item">
+                  <Link to="/admin/settings">System Settings</Link>
+                </li>
+                <li className="item">
                   <Link to="#" onClick={handleLogout}>
                     Log Out
                   </Link>
