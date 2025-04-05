@@ -43,7 +43,7 @@ const Login = () => {
       const result = await Auth.signup(newAccount);
       setPost(result?.message);
     } catch (error) {
-      setPost(error);
+      setPost(error?.response?.data?.message);
     }
   };
 
@@ -58,13 +58,14 @@ const Login = () => {
     try {
       setPost1('Loading.....');
       const result = await Auth.login(account);
-      setPost1(result.message);
+      setPost1(result?.message);
       if (result.loggedIn) {
         setAuth(result);
         navigate('/account');
       }
     } catch (error) {
-      console.log(error);
+      setPost1(error?.response?.data?.message);
+      setPost('');
     }
   };
 
@@ -220,7 +221,12 @@ const Login = () => {
                         <div className="form-group">
                           <p
                             style={{
-                              color: 'green',
+                              color:
+                                post.search('successfully') === -1
+                                  ? post.search('Loading') === -1
+                                    ? 'red'
+                                    : 'black'
+                                  : 'green',
                             }}
                           >
                             {post}

@@ -127,7 +127,7 @@ const ProductDetail = () => {
       try {
         const productId = params.id;
         const result = await ProductApi.getProduct(productId);
-        setProduct(result.product);
+        setProduct(result);
       } catch (error) {
         if (error.response.status === 404) navigate('/404');
         console.log(error);
