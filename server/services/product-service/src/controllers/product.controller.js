@@ -16,7 +16,7 @@ class ProductController {
   async getProduct(req, res) {
     const { id } = req.params;
     try {
-      const product = await Product.findById({ _id: id });
+      const product = await Product.findById(id);
       res.status(200).json(product);
     } catch (error) {
       res.status(500).json({ message: error.message });
@@ -26,58 +26,46 @@ class ProductController {
   // [POST] /api/products
   async postProduct(req, res) {
     const {
-      productName,
-      productPrice,
-      productDesc,
-      discription,
-      imageDisplay,
-      imgBackground,
-      productImages,
+      merchName,
+      merchPrice,
       newBadge,
-      bagSize,
-      grind,
-      making,
-      imgExtra,
+      size,
+      availability,
       color,
-      imageMiddleRoast,
+      brand,
+      imageDisplay,
+      merchImages,
+      merchDesc,
+      features,
     } = req.body;
 
-    const cloudinaryUploader = (e) => {
-      return cloudinary.uploader.upload(e, {
-        upload_preset: "ok-but-first-coffee",
-      });
-    };
-
     try {
-      const productImagesCloudinary = await Promise.all(productImages?.map(cloudinaryUploader));
-      const makingCloudinary = await Promise.all(making?.map(cloudinaryUploader));
-      const images = await Promise.all([
-        cloudinaryUploader(imageDisplay),
-        cloudinaryUploader(imgBackground),
-        cloudinaryUploader(imgExtra.imgBag),
-        cloudinaryUploader(imgExtra.imgSub),
-        cloudinaryUploader(imageMiddleRoast),
-      ]);
+      const cloudinaryUploader = (e) => {
+        return cloudinary.uploader.upload(e, {
+          upload_preset: "ok-but-first-coffee",
+        });
+      };
+
+      const merchImagesURL = await Promise.all(merchImages?.map((e) => cloudinaryUploader(e)));
+      const merchImgs = [];
+      for (const res of merchImagesURL) merchImgs.push(res.public_id);
+      const imgDisplayCloudinary = await cloudinaryUploader(imageDisplay);
 
       const newProduct = new Product({
-        productName,
-        productPrice,
-        productDesc,
-        discription,
-        imageDisplay: images[0].public_id,
-        imgBackground: images[1].public_id,
-        productImages: productImagesCloudinary.map((img) => img.public_id),
+        name: merchName,
+        price: merchPrice,
+        imageDisplay: imgDisplayCloudinary.public_id,
+        merchImages: merchImgs,
         newBadge,
-        bagSize,
-        grind,
-        making: makingCloudinary.map((img) => img.public_id),
-        imgExtra: {
-          imgBag: images[2].public_id,
-          imgSub: images[3].public_id,
-        },
+        size,
+        availability,
         color,
-        imageMiddleRoast: images[4].public_id,
+        brand,
+        description: merchDesc,
+        features,
       });
+
+      console.log(newProduct);
 
       await newProduct.save();
       res.status(201).json(newProduct);

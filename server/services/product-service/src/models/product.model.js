@@ -5,24 +5,9 @@ const productSchema = new mongoose.Schema(
     name: { type: String, required: true },
     imageDisplay: { type: String, required: true },
     imageBackground: { type: String, required: true },
-    productImages: [
-      {
-        type: String,
-        required: true,
-      },
-    ],
-    bagSize: [
-      {
-        type: Number,
-        required: true,
-      },
-    ],
-    grind: [
-      {
-        type: String,
-        required: true,
-      },
-    ],
+    productImages: [{ type: String, required: true }],
+    bagSize: [{ type: Number, required: true }],
+    grind: [{ type: String, required: true }],
     price: { type: Number, required: true },
     newBadge: { type: Boolean, required: true },
     making: [
@@ -42,35 +27,11 @@ const productSchema = new mongoose.Schema(
       imgBag: { type: String, required: true },
       imgSub: { type: String, required: true },
     },
-    discription: [
-      {
-        type: String,
-        required: true,
-      },
-    ],
-    discription: { type: String, required: true },
-    review: [
-      // {
-      //   name: { type: String, required: true },
-      //   email: { type: String, required: true },
-      //   rating: { type: Number, required: true },
-      //   title: { type: String, required: true },
-      //   body: { type: String, required: true },
-      //   customerImage: { type: String, required: false },
-      //   reviewImage: { type: String, required: false },
-      //   content: { type: String, required: true },
-      //   rate: { type: Number, required: true },
-      // },
-    ],
-    question: [
-      // {
-      //   name: { type: String, required: true },
-      //   email: { type: String, required: true },
-      //   question: { type: String, required: true },
-      // },
-    ],
+    description: { type: String, required: true },
+    review: [],
+    question: [],
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Product", productSchema);
