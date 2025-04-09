@@ -20,6 +20,10 @@ const Card = ({
   const { auth } = useContext(AuthContext);
   const navigate = useNavigate();
   const [isInWishlist, setIsInWishlist] = useState(false);
+  const [notification, setNotification] = useState({
+    show: false,
+    message: '',
+  });
 
   // Check if the product is already in wishlist
   useEffect(() => {
@@ -28,11 +32,42 @@ const Card = ({
   }, [idProduct]);
 
   const handleClick = () => {
-    if (auth.loggedIn) {
-      console.log('Add to cart');
+    // Get existing cart or initialize new one
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    // Check if product already in cart
+    const existingItemIndex = cart.findIndex((item) => item.id === idProduct);
+
+    if (existingItemIndex >= 0) {
+      // Increase quantity if product already in cart
+      cart[existingItemIndex].quantity += 1;
     } else {
-      navigate('/login');
+      // Add new product to cart
+      cart.push({
+        id: idProduct,
+        title,
+        img,
+        price,
+        path,
+        quantity: 1,
+      });
     }
+
+    // Save updated cart to localStorage
+    localStorage.setItem('cart', JSON.stringify(cart));
+
+    // Show notification
+    setNotification({
+      show: true,
+      message: `Added ${title} to cart!`,
+    });
+
+    // Hide notification after 3 seconds
+    setTimeout(() => {
+      setNotification({ show: false, message: '' });
+    }, 3000);
+
+    console.log('Added to cart:', title);
   };
 
   const toggleWishlist = (e) => {
@@ -63,6 +98,19 @@ const Card = ({
       data-id={idProduct}
       {...props}
     >
+      {notification.show && (
+        <div className="cart-notification">
+          <div className="notification-content">
+            <span>{notification.message}</span>
+            <button
+              onClick={() => setNotification({ show: false, message: '' })}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="card-img">
         {newBadge ? (
           <div className="card-badges">
