@@ -29,8 +29,7 @@ const MerchDetail = () => {
       try {
         const merchId = params.id;
         const result = await MerchApi.getMerch(merchId);
-        console.log({ result });
-        setMerch(result.product);
+        setMerch(result);
       } catch (error) {
         if (error.response.status === 404) navigate('/404');
         console.log(error);
@@ -51,7 +50,6 @@ const MerchDetail = () => {
 
     document.title = `Buy ${merch.name} Online | Coffee Beans | OKBF`;
   }, [merch]);
-  console.log({ merch });
 
   const handleChangeQuantity = (e) => {
     if (e.target.innerText === '+') {
@@ -112,6 +110,10 @@ const MerchDetail = () => {
       </>
     );
   };
+
+  if (!merch) {
+    return null;
+  }
 
   return (
     <>
@@ -205,7 +207,7 @@ const MerchDetail = () => {
               <div className="merch-feature">
                 <h3 className="merch-feature-title">FEATURES</h3>
                 <ul className="merch-feature-content">
-                  {merch.features?.split('\n')?.map((item) => (
+                  {merch.features?.map((item) => (
                     <li style={{ listStyle: 'disc' }}>{item}</li>
                   ))}
                 </ul>

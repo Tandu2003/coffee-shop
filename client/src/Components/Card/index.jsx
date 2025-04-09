@@ -4,7 +4,7 @@ import { Image } from 'cloudinary-react';
 import iconCart from '../../Assets/svg/iconCart.svg';
 import iconHeart from '../../Assets/svg/iconHeart.svg';
 import './Card.scss';
-import { useContext } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import AuthContext from '../../Context/AuthProvider';
 
 const Card = ({
@@ -19,13 +19,42 @@ const Card = ({
 }) => {
   const { auth } = useContext(AuthContext);
   const navigate = useNavigate();
-  console.log({ auth });
+  const [isInWishlist, setIsInWishlist] = useState(false);
+
+  // Check if the product is already in wishlist
+  useEffect(() => {
+    const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+    setIsInWishlist(wishlist.some((item) => item.id === idProduct));
+  }, [idProduct]);
+
   const handleClick = () => {
     if (auth.loggedIn) {
       console.log('Add to cart');
     } else {
       navigate('/login');
     }
+  };
+
+  const toggleWishlist = (e) => {
+    e.preventDefault();
+    let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+
+    if (isInWishlist) {
+      // Remove from wishlist
+      wishlist = wishlist.filter((item) => item.id !== idProduct);
+    } else {
+      // Add to wishlist
+      wishlist.push({
+        id: idProduct,
+        title,
+        img,
+        price,
+        path,
+      });
+    }
+
+    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    setIsInWishlist(!isInWishlist);
   };
 
   return (
@@ -53,7 +82,10 @@ const Card = ({
         </Link>
 
         <div className="card-wishlist">
-          <button>
+          <button
+            onClick={toggleWishlist}
+            className={isInWishlist ? 'in-wishlist' : ''}
+          >
             <img src={iconHeart} alt="icon-heart" />
           </button>
         </div>
