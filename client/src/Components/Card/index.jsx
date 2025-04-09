@@ -17,8 +17,6 @@ const Card = ({
   path = '#',
   ...props
 }) => {
-  const { auth } = useContext(AuthContext);
-  const navigate = useNavigate();
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [notification, setNotification] = useState({
     show: false,
