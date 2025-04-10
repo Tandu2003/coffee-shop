@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package merch;
+
+service MerchService {
+  rpc GetMerches(Empty) returns (MerchList);
+  rpc GetMerch(MerchId) returns (Merch);
+}
+
+message Empty {}
+
+message MerchId {
+  string id = 1;
+}
+
+message Merch {
+  string id = 1;
+  string name = 2;
+  double price = 3;
+  string imageDisplay = 4;
+  repeated string merchImages = 5;
+  repeated string size = 6;
+  string brand = 7;
+  bool availability = 8;
+  bool newBadge = 9;
+  repeated string color = 10;
+  string description = 11;
+  repeated Feature features = 12;
+  repeated Review review = 13;
+  repeated Question question = 14;
+}
+
+message Feature {
+  string title = 1;
+  string description = 2;
+}
+
+message Review {
+  string username = 1;
+  int32 rating = 2;
+  string comment = 3;
+  string date = 4;
+}
+
+message Question {
+  string username = 1;
+  string question = 2;
+  string answer = 3;
+  string date = 4;
+}
+
+message MerchList {
+  repeated Merch merches = 1;
+}
