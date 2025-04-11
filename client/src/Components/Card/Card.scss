@@ -40,7 +40,7 @@
 
       &::before {
         display: block;
-        content: "";
+        content: '';
         padding-bottom: 100%;
       }
 
@@ -80,6 +80,14 @@
           line-height: 20px;
           position: relative;
           z-index: 5;
+        }
+
+        &.in-wishlist {
+          background-color: red;
+
+          img {
+            filter: brightness(0) invert(1); // Makes the heart icon white for better contrast
+          }
         }
       }
     }
@@ -202,5 +210,16 @@
     .card-content {
       padding: 20px;
     }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

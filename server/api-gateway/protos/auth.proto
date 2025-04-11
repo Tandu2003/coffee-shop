@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package auth;
+
+service AuthService {
+  rpc GetAuth(AuthRequest) returns (AuthResponse);
+  rpc Verify(AuthRequest) returns (VerifyResponse);
+}
+
+message AuthRequest {
+  string sessionId = 1;
+}
+
+message AuthResponse {
+  bool loggedIn = 1;
+  User user = 2;
+}
+
+message VerifyResponse {
+  bool loggedIn = 1;
+  User user = 2;
+}
+
+message User {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+  bool isAdmin = 4;
+}

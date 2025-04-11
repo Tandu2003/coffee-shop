@@ -18,6 +18,10 @@ const MerchDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [size, setSize] = useState(0);
   const [color, setColor] = useState('');
+  const [notification, setNotification] = useState({
+    show: false,
+    message: '',
+  });
   const navigate = useNavigate();
   const handleChangeImageSingle = (image) => {
     setImageSingle(image);
@@ -29,8 +33,7 @@ const MerchDetail = () => {
       try {
         const merchId = params.id;
         const result = await MerchApi.getMerch(merchId);
-        console.log({ result });
-        setMerch(result.product);
+        setMerch(result);
       } catch (error) {
         if (error.response.status === 404) navigate('/404');
         console.log(error);
@@ -51,7 +54,6 @@ const MerchDetail = () => {
 
     document.title = `Buy ${merch.name} Online | Coffee Beans | OKBF`;
   }, [merch]);
-  console.log({ merch });
 
   const handleChangeQuantity = (e) => {
     if (e.target.innerText === '+') {
@@ -73,6 +75,56 @@ const MerchDetail = () => {
 
   const handleChangeSize = (item) => {
     setSize(item);
+  };
+
+  const addToCart = () => {
+    // Get existing cart or initialize new one
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    // Create product object with selected options
+    const productToAdd = {
+      id: merch._id,
+      title: merch.name,
+      img: merch.merchImages?.[0],
+      price: merch.price,
+      path: `/merch/${merch._id}`,
+      quantity: quantity,
+      options: {
+        size: size,
+        color: color,
+      },
+      type: 'merch',
+    };
+
+    // Check if product with same options already in cart
+    const existingItemIndex = cart.findIndex(
+      (item) =>
+        item.id === productToAdd.id &&
+        item.options?.size === productToAdd.options?.size &&
+        item.options?.color === productToAdd.options?.color
+    );
+
+    if (existingItemIndex >= 0) {
+      // Update quantity if product already in cart
+      cart[existingItemIndex].quantity += quantity;
+    } else {
+      // Add new product to cart
+      cart.push(productToAdd);
+    }
+
+    // Save updated cart to localStorage
+    localStorage.setItem('cart', JSON.stringify(cart));
+
+    // Show notification
+    setNotification({
+      show: true,
+      message: `Added ${quantity} ${merch.name} to cart successfully!`,
+    });
+
+    // Hide notification after 3 seconds
+    setTimeout(() => {
+      setNotification({ show: false, message: '' });
+    }, 3000);
   };
 
   const ShowImage = () => {
@@ -113,9 +165,25 @@ const MerchDetail = () => {
     );
   };
 
+  if (!merch) {
+    return null;
+  }
+
   return (
     <>
       <main className="product-merch">
+        {notification.show && (
+          <div className="cart-notification">
+            <div className="notification-content">
+              <span>{notification.message}</span>
+              <button
+                onClick={() => setNotification({ show: false, message: '' })}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
         <section className="merch-detail">
           <Breadcrumb
             breadcrumb={merch.name}
@@ -192,7 +260,9 @@ const MerchDetail = () => {
                 <div className="merch-subtotal">
                   <span>Subtotal ${(merch.price * quantity).toFixed(2)}</span>
                 </div>
-                <button className="btn-add">Add to Cart</button>
+                <button className="btn-add" onClick={addToCart}>
+                  Add to Cart
+                </button>
               </div>
             </div>
           </div>
@@ -205,7 +275,7 @@ const MerchDetail = () => {
               <div className="merch-feature">
                 <h3 className="merch-feature-title">FEATURES</h3>
                 <ul className="merch-feature-content">
-                  {merch.features?.split('\n')?.map((item) => (
+                  {merch.features?.map((item) => (
                     <li style={{ listStyle: 'disc' }}>{item}</li>
                   ))}
                 </ul>

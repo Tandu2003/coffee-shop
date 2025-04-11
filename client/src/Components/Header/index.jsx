@@ -13,6 +13,7 @@ import iconHeart from '../../Assets/svg/iconHeart.svg';
 import iconClose from '../../Assets/svg/iconClose.svg';
 import arrowDown from '../../Assets/svg/arrowDown.svg';
 import { Auth } from '../../Api/auth';
+import { Image } from 'cloudinary-react';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -25,10 +26,33 @@ const Header = () => {
   const [showMore, setShowMore] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const [showCart, setShowCart] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
+  const [cartTotal, setCartTotal] = useState(0);
   const [post, setPost] = useState(null);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
+
+  // Function to load cart data from localStorage
+  const loadCartData = () => {
+    const cartData = JSON.parse(localStorage.getItem('cart')) || [];
+    setCartItems(cartData);
+
+    // Calculate total price
+    const total = cartData.reduce((sum, item) => {
+      return sum + item.price * item.quantity;
+    }, 0);
+
+    setCartTotal(total);
+  };
+
+  // Update cart data when showing cart or when component mounts
+  useEffect(() => {
+    if (showCart) {
+      loadCartData();
+    }
+  }, [showCart]);
 
   const updateDimensions = () => {
     setWidth(window.innerWidth);
@@ -54,6 +78,11 @@ const Header = () => {
     setShowSearch(!showSearch);
   };
 
+  const handleShowCart = () => {
+    handleOff();
+    setShowCart(!showCart);
+  };
+
   const handleShowLogin = () => {
     const URL = location.pathname;
     handleOff();
@@ -65,9 +94,34 @@ const Header = () => {
     setShowSearch(false);
     setShowMenu(false);
     setShowLogin(false);
+    setShowCart(false);
     setPost('');
     setUsername('');
     setPassword('');
+  };
+
+  // Function to remove item from cart
+  const removeFromCart = (itemId, optionsToMatch = {}) => {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    const updatedCart = cart.filter((item) => {
+      if (item.id !== itemId) return true;
+
+      // If we have specific options to match (like size, color, grind)
+      if (Object.keys(optionsToMatch).length > 0) {
+        for (const [key, value] of Object.entries(optionsToMatch)) {
+          if (item.options && item.options[key] !== value) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      return false;
+    });
+
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+    loadCartData();
   };
 
   const handleOnChange = (e) => {
@@ -285,9 +339,141 @@ const Header = () => {
                   </div>
                   <div className="hide_pc"></div>
                   <div className="header-middle__item">
-                    <Link to="/">
+                    <Link to="#" onClick={handleShowCart}>
                       <img src={cart} alt="cart-icon" />
+                      {cartItems.length > 0 && (
+                        <span className="cart-count">{cartItems.length}</span>
+                      )}
                     </Link>
+                    <div
+                      className="header-middle__cart hide_mb"
+                      style={
+                        showCart
+                          ? {
+                              visibility: 'visible',
+                              opacity: 1,
+                            }
+                          : {}
+                      }
+                    >
+                      <div
+                        className={
+                          showCart ? 'cart-wrapper is-show' : 'cart-wrapper'
+                        }
+                      >
+                        <div className="cart-header">
+                          <h2 className="title">Shopping Cart</h2>
+                          <button onClick={handleShowCart}>
+                            <img src={iconClose} alt="icon-close" />
+                          </button>
+                        </div>
+                        <div className="cart-content">
+                          {cartItems.length > 0 ? (
+                            <>
+                              <div className="cart-items">
+                                {cartItems.map((item, index) => (
+                                  <div className="cart-item" key={index}>
+                                    <div className="item-image">
+                                      <Image
+                                        cloudName="ok-but-first-coffee"
+                                        publicId={item.img}
+                                        crop="scale"
+                                        width="60"
+                                        height="60"
+                                      />
+                                    </div>
+                                    <div className="item-details">
+                                      <div className="item-name">
+                                        {item.title}
+                                      </div>
+                                      {item.options && (
+                                        <div className="item-options">
+                                          {item.options.size && (
+                                            <span>
+                                              Size: {item.options.size}
+                                            </span>
+                                          )}
+                                          {item.options.color && (
+                                            <span>
+                                              Color: {item.options.color}
+                                            </span>
+                                          )}
+                                          {item.options.grind && (
+                                            <span>
+                                              Grind: {item.options.grind}
+                                            </span>
+                                          )}
+                                          {item.options.bagSize && (
+                                            <span>
+                                              Bag: {item.options.bagSize} oz
+                                            </span>
+                                          )}
+                                        </div>
+                                      )}
+                                      <div className="item-price-qty">
+                                        <span>
+                                          ${item.price} × {item.quantity}
+                                        </span>
+                                        <span className="item-total">
+                                          $
+                                          {(item.price * item.quantity).toFixed(
+                                            2
+                                          )}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <button
+                                      className="remove-item"
+                                      onClick={() =>
+                                        removeFromCart(
+                                          item.id,
+                                          item.options || {}
+                                        )
+                                      }
+                                    >
+                                      ×
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="cart-footer">
+                                <div className="cart-total">
+                                  <span>Total:</span>
+                                  <span>${cartTotal.toFixed(2)}</span>
+                                </div>
+                                <div className="cart-actions">
+                                  <div
+                                    // to="/cart"
+                                    className="theme-btn__white"
+                                    onClick={handleShowCart}
+                                  >
+                                    View Cart
+                                  </div>
+                                  <div
+                                    // to="/checkout"
+                                    className="theme-btn__black"
+                                    onClick={handleShowCart}
+                                  >
+                                    Checkout
+                                  </div>
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="empty-cart">
+                              <p>Your cart is currently empty.</p>
+                              <Link
+                                to="/collections/coffee-shop"
+                                className="theme-btn__black"
+                                onClick={handleShowCart}
+                              >
+                                Continue Shopping
+                              </Link>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   <div className="header-middle__item">
                     <Link
@@ -633,8 +819,120 @@ const Header = () => {
           )}
 
           <div
+            className="header-middle__cart hide_pc"
+            style={
+              showCart
+                ? {
+                    visibility: 'visible',
+                    opacity: 1,
+                  }
+                : {}
+            }
+          >
+            <div className={showCart ? 'cart-wrapper is-show' : 'cart-wrapper'}>
+              <div className="cart-header">
+                <h2 className="title">Shopping Cart</h2>
+                <button onClick={handleShowCart}>
+                  <img src={iconClose} alt="icon-close" />
+                </button>
+              </div>
+              <div className="cart-content">
+                {cartItems.length > 0 ? (
+                  <>
+                    <div className="cart-items">
+                      {cartItems.map((item, index) => (
+                        <div className="cart-item" key={index}>
+                          <div className="item-image">
+                            <Image
+                              cloudName="ok-but-first-coffee"
+                              publicId={item.img}
+                              crop="scale"
+                              width="60"
+                              height="60"
+                            />
+                          </div>
+                          <div className="item-details">
+                            <div className="item-name">{item.title}</div>
+                            {item.options && (
+                              <div className="item-options">
+                                {item.options.size && (
+                                  <span>Size: {item.options.size}</span>
+                                )}
+                                {item.options.color && (
+                                  <span>Color: {item.options.color}</span>
+                                )}
+                                {item.options.grind && (
+                                  <span>Grind: {item.options.grind}</span>
+                                )}
+                                {item.options.bagSize && (
+                                  <span>Bag: {item.options.bagSize} oz</span>
+                                )}
+                              </div>
+                            )}
+                            <div className="item-price-qty">
+                              <span>
+                                ${item.price} × {item.quantity}
+                              </span>
+                              <span className="item-total">
+                                ${(item.price * item.quantity).toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            className="remove-item"
+                            onClick={() =>
+                              removeFromCart(item.id, item.options || {})
+                            }
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="cart-footer">
+                      <div className="cart-total">
+                        <span>Total:</span>
+                        <span>${cartTotal.toFixed(2)}</span>
+                      </div>
+                      <div className="cart-actions">
+                        <Link
+                          to="/cart"
+                          className="theme-btn__white"
+                          onClick={handleShowCart}
+                        >
+                          View Cart
+                        </Link>
+                        <Link
+                          to="/checkout"
+                          className="theme-btn__black"
+                          onClick={handleShowCart}
+                        >
+                          Checkout
+                        </Link>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="empty-cart">
+                    <p>Your cart is currently empty.</p>
+                    <Link
+                      to="/collections/coffee-shop"
+                      className="theme-btn__black"
+                      onClick={handleShowCart}
+                    >
+                      Continue Shopping
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div
             className={
-              showMenu || showSearch || showLogin ? 'background-overlay' : ''
+              showMenu || showSearch || showLogin || showCart
+                ? 'background-overlay'
+                : ''
             }
             onClick={handleOff}
           ></div>

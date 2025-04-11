@@ -116,6 +116,10 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [bagSize, setBagSize] = useState(0);
   const [grind, setGrind] = useState('');
+  const [notification, setNotification] = useState({
+    show: false,
+    message: '',
+  });
   const navigate = useNavigate();
   const handleChangeImageSingle = (image) => {
     setImageSingle(image);
@@ -171,6 +175,56 @@ const ProductDetail = () => {
     setBagSize(item);
   };
 
+  const addToCart = () => {
+    // Get existing cart or initialize new one
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    // Create product object with selected options
+    const productToAdd = {
+      id: product._id,
+      title: product.name,
+      img: product.productImages?.[0],
+      price: product.price,
+      path: `/coffee/${product._id}`,
+      quantity: quantity,
+      options: {
+        bagSize: bagSize,
+        grind: grind,
+      },
+      type: 'coffee',
+    };
+
+    // Check if product with same options already in cart
+    const existingItemIndex = cart.findIndex(
+      (item) =>
+        item.id === productToAdd.id &&
+        item.options?.bagSize === productToAdd.options?.bagSize &&
+        item.options?.grind === productToAdd.options?.grind
+    );
+
+    if (existingItemIndex >= 0) {
+      // Update quantity if product already in cart
+      cart[existingItemIndex].quantity += quantity;
+    } else {
+      // Add new product to cart
+      cart.push(productToAdd);
+    }
+
+    // Save updated cart to localStorage
+    localStorage.setItem('cart', JSON.stringify(cart));
+
+    // Show notification
+    setNotification({
+      show: true,
+      message: `Added ${quantity} ${product.name} to cart successfully!`,
+    });
+
+    // Hide notification after 3 seconds
+    setTimeout(() => {
+      setNotification({ show: false, message: '' });
+    }, 3000);
+  };
+
   const ShowImage = () => {
     return (
       <>
@@ -221,6 +275,18 @@ const ProductDetail = () => {
   return (
     <>
       <main className="product-coffee">
+        {notification.show && (
+          <div className="cart-notification">
+            <div className="notification-content">
+              <span>{notification.message}</span>
+              <button
+                onClick={() => setNotification({ show: false, message: '' })}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
         <section
           style={{ background: `${product.color?.colorBackground}` }}
           className="product-detail"
@@ -333,7 +399,9 @@ const ProductDetail = () => {
                 <div className="product-subtotal">
                   <span>Subtotal ${(product.price * quantity).toFixed(2)}</span>
                 </div>
-                <button className="btn-add">Add to Cart</button>
+                <button className="btn-add" onClick={addToCart}>
+                  Add to Cart
+                </button>
               </div>
             </div>
           </div>
