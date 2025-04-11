@@ -1,22 +1,35 @@
 const bcrypt = require("bcryptjs");
 
-const bcryptHash = async (data, res) => {
+// Cấu hình số vòng salt
+const SALT_ROUNDS = 12;
+
+/**
+ * Băm mật khẩu với bcrypt
+ * @param {string} password - Mật khẩu gốc
+ * @returns {Promise<string>} - Mật khẩu đã được băm
+ */
+const hashPassword = async (password) => {
   try {
-    const salt = await bcrypt.genSalt(12);
-    const hashData = await bcrypt.hash(data, salt);
-    return hashData;
+    const salt = await bcrypt.genSalt(SALT_ROUNDS);
+    return await bcrypt.hash(password, salt);
   } catch (error) {
-    res.status(500).json({ message: "Data encryption error!!!" });
+    throw new Error("Lỗi khi mã hóa mật khẩu: " + error.message);
   }
 };
 
-const bcryptCompare = async (data, hash, res) => {
+/**
+ * So sánh mật khẩu với hash đã lưu
+ * @param {string} password - Mật khẩu gốc
+ * @param {string} hashedPassword - Mật khẩu đã được băm
+ * @returns {Promise<boolean>} - Trả về true nếu trùng khớp, false nếu không
+ */
+const comparePassword = async (password, hashedPassword) => {
   try {
-    const validData = await bcrypt.compare(data, hash);
-    return validData;
+    return await bcrypt.compare(password, hashedPassword);
   } catch (error) {
-    res.status(500).json({ message: "Data comparison error!!!" });
+    throw new Error("Lỗi khi so sánh mật khẩu: " + error.message);
   }
 };
 
-module.exports = { bcryptHash, bcryptCompare };
+module.exports = { hashPassword, comparePassword };
+
