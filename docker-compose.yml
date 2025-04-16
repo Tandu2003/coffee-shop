@@ -1,0 +1,202 @@
+version: '3.8'
+
+services:
+  # Frontend client service
+  client:
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: okbf-client
+    ports:
+      - "3000:80"
+    depends_on:
+      - api-gateway
+      - auth-service
+      - product-service
+      - merch-service
+    environment:
+      - NODE_ENV=production
+      # Đảm bảo port cho auth-service là 5001, không phải 5000
+      - REACT_APP_URL_FONTEND=http://localhost:3000
+      - REACT_APP_API_AUTH=http://localhost:5001
+      - REACT_APP_API_PRODUCT=http://localhost:5002
+      - REACT_APP_API_MERCH=http://localhost:5003
+    networks:
+      - frontend-network
+      - backend-network
+    restart: unless-stopped
+
+  # API Gateway service
+  api-gateway:
+    build: 
+      context: ./server/api-gateway
+      dockerfile: Dockerfile
+    container_name: okbf-api-gateway
+    ports:
+      - "3001:3001"
+    depends_on:
+      - auth-service
+      - product-service
+      - merch-service
+    environment:
+      - PORT=3001
+      - NODE_ENV=production
+      - PRODUCT_SERVICE_URL=http://product-service:5002
+      - MERCH_SERVICE_URL=http://merch-service:5003
+      - AUTH_SERVICE_URL=http://auth-service:5001
+      - PRODUCT_GRPC_URL=product-service:50051
+      - MERCH_GRPC_URL=merch-service:50052
+      - AUTH_GRPC_URL=auth-service:50053
+      - JWT_SECRET=${JWT_SECRET:-default_jwt_secret_for_development_only}
+      - RATE_LIMIT_WINDOW_MS=900000
+      - RATE_LIMIT_MAX_REQUESTS=100
+      - ALLOWED_ORIGINS=http://localhost:3000
+      - LOG_LEVEL=info
+    volumes:
+      - api_gateway_logs:/app/logs
+    networks:
+      - backend-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # Auth microservice
+  auth-service:
+    build: 
+      context: ./server/services/auth-service
+      dockerfile: Dockerfile
+    container_name: okbf-auth-service
+    ports:
+      - "5001:5001"  # Expose port to host for direct access
+    expose:
+      - "5001"
+      - "50053"
+    environment:
+      - PORT=5001
+      - MONGO_URI=mongodb+srv://coffeedb:_aecc%23KTTKPM@coffeeshop.eo6bc.mongodb.net/coffeeshopdb?retryWrites=true&w=majority&appName=CoffeeShop
+      - KEY_SECRET=a7d9f2b8c6e3d1a4f5b7c9e6d2a8f3b4
+      - NODE_ENV=production
+      - AUTH_EMAIL=${AUTH_EMAIL}
+      - AUTH_PASS=${AUTH_PASS}
+    depends_on: []  # Remove MongoDB dependency as we're using cloud MongoDB
+    volumes:
+      - auth_service_logs:/app/logs
+    networks:
+      - backend-network
+      - frontend-network  # Add frontend network to allow direct access
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # Product microservice
+  product-service:
+    build: 
+      context: ./server/services/product-service
+      dockerfile: Dockerfile
+    container_name: okbf-product-service
+    ports:
+      - "5002:5002"  # Expose port to host for direct access
+    expose:
+      - "5002"
+      - "50051"
+    environment:
+      - PORT=5002
+      - MONGO_URI=mongodb+srv://coffeedb:_aecc%23KTTKPM@coffeeshop.eo6bc.mongodb.net/coffeeshopdb?retryWrites=true&w=majority&appName=CoffeeShop
+      - NODE_ENV=production
+      - CLOUDINARY_NAME=${CLOUDINARY_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+    depends_on: []  # Remove MongoDB dependency as we're using cloud MongoDB
+    volumes:
+      - product_service_logs:/app/logs
+    networks:
+      - backend-network
+      - database-network
+      - frontend-network  # Add frontend network to allow direct access
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # Merchandise microservice
+  merch-service:
+    build: 
+      context: ./server/services/merch-service
+      dockerfile: Dockerfile
+    container_name: okbf-merch-service
+    ports:
+      - "5003:5003"  # Expose port to host for direct access
+    expose:
+      - "5003" 
+      - "50052"
+    environment:
+      - PORT=5003
+      - MONGO_URI=mongodb+srv://coffeedb:_aecc%23KTTKPM@coffeeshop.eo6bc.mongodb.net/coffeeshopdb?retryWrites=true&w=majority&appName=CoffeeShop
+      - NODE_ENV=production
+      - CLOUDINARY_NAME=${CLOUDINARY_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+    depends_on: []  # Remove MongoDB dependency as we're using cloud MongoDB
+    volumes:
+      - merch_service_logs:/app/logs
+    networks:
+      - backend-network
+      - frontend-network  # Keep only necessary networks
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # MongoDB database
+  mongodb:
+    image: mongo:latest
+    container_name: okbf-mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=coffeedb
+      - MONGO_INITDB_ROOT_PASSWORD=_aecc#KTTKPM
+      - MONGO_INITDB_DATABASE=coffeeshopdb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - database-network
+    restart: unless-stopped
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh mongodb:27017/coffeeshopdb --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+# Define networks
+networks:
+  frontend-network:
+    driver: bridge
+  backend-network:
+    driver: bridge
+  database-network:
+    driver: bridge
+
+# Define volumes
+volumes:
+  mongodb_data:
+  api_gateway_logs:
+  auth_service_logs:
+  product_service_logs:
+  merch_service_logs:
