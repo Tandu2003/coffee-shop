@@ -25,52 +25,54 @@ class MerchController {
 
   // [POST] /api/merch
   async postMerch(req, res) {
-    const {
-      name,
-      price,
-      imageDisplay,
-      merchImages,
-      size,
-      brand,
-      availability,
-      newBadge,
-      color,
-      description,
-      features,
-      review,
-      question,
-    } = req.body;
-
-    const cloudinaryUploader = (e) => {
-      return cloudinary.uploader.upload(e, {
-        upload_preset: "ok-but-first-coffee",
-      });
-    };
-
     try {
-      const merchImagesCloudinary = await Promise.all(merchImages?.map(cloudinaryUploader));
-      const images = await Promise.all([cloudinaryUploader(imageDisplay)]);
-
-      const newMerch = new Merch({
-        name,
-        price,
-        imageDisplay: images[0].url,
-        merchImages: merchImagesCloudinary.map((e) => e.public_id),
-        size,
-        brand,
-        availability,
+      const {
+        merchName,
+        merchPrice,
         newBadge,
+        size,
+        availability,
         color,
-        description,
+        brand,
+        imageDisplay,
+        merchImages,
+        merchDesc,
         features,
-        review,
-        question,
+      } = req.body;
+
+      const cloudinaryUploader = (e) => {
+        return cloudinary.uploader.upload(e, {
+          upload_preset: "ok-but-first-coffee",
+        });
+      };
+
+      const merchImagesURL = await Promise.all(
+        merchImages?.map((e) => cloudinaryUploader(e))
+      );
+      const merchImgs = [];
+      for (const res of merchImagesURL) merchImgs.push(res.public_id);
+      const imgDisplayCloudinary = await cloudinaryUploader(imageDisplay);
+
+      const data = new Merch({
+        name: merchName,
+        price: merchPrice,
+        imageDisplay: imgDisplayCloudinary.public_id,
+        merchImages: merchImgs,
+        newBadge,
+        size,
+        availability,
+        color,
+        brand,
+        description: merchDesc,
+        features,
       });
 
-      await newMerch.save();
-      res.status(200).json(newMerch);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+      await data.save();
+
+      res.status(200).json(data);
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ err: err });
     }
   }
 
@@ -80,71 +82,88 @@ class MerchController {
 
   // [DELETE] /api/merch/:id
   async deleteMerch(req, res) {
-    const { id } = req.params;
     try {
-      await Merch.findByIdAndDelete({ _id: id });
-      res.status(200).json({ message: "Merch deleted" });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  }
-
-  // [PUT] /api/merch/:id
-  async putMerch(req, res) {
-    const { id } = req.params;
-
-    const exitMerch = await Merch.findById({ _id: id });
-
-    if (!exitMerch) {
-      return res.status(404).json({ message: "Merch not found" });
-    }
-
-    const {
-      name,
-      price,
-      imageDisplay,
-      merchImages,
-      size,
-      brand,
-      availability,
-      newBadge,
-      color,
-      description,
-      features,
-      review,
-      question,
-    } = req.body;
-
-    const cloudinaryUploader = (e) => {
-      return cloudinary.uploader.upload(e, {
-        upload_preset: "ok-but-first-coffee",
-      });
-    };
-
-    try {
-      const merchImagesCloudinary = await Promise.all(merchImages?.map(cloudinaryUploader));
-      const images = await Promise.all([cloudinaryUploader(imageDisplay)]);
-
-      const updatedMerch = {
-        name,
-        price,
-        imageDisplay: images[0].url,
-        merchImages: merchImagesCloudinary.map((e) => e.public_id),
-        size,
-        brand,
-        availability,
+      const {
+        merchName,
+        merchPrice,
         newBadge,
+        size,
+        availability,
         color,
-        description,
+        brand,
+        imageDisplay,
+        merchImages,
+        merchDesc,
         features,
-        review,
-        question,
-      };
+      } = req.body;
+      const _id = req.params.merchId;
 
-      await Merch.findByIdAndUpdate({ _id: id }, updatedMerch);
-      res.status(200).json(updatedMerch);
+      const prevProduct = await Merch.findOne({
+        _id,
+      });
+
+      const deleteImage = async (e) => {
+        cloudinary.uploader
+          .destroy(e, function (error, result) {
+            console.log(result, error);
+          })
+          .then((resp) => console.log(resp))
+          .catch((_err) =>
+            console.log("Something went wrong, please try again later.")
+          );
+      };
+      if (imageDisplay.length > 30) deleteImage(prevProduct.imageDisplay);
+
+      prevProduct.merchImages?.map((e) => {
+        if (!merchImages.includes(e)) deleteImage(e);
+      });
+
+      const cloudinaryUploader = (e) => {
+        return cloudinary.uploader.upload(e, {
+          upload_preset: "ok-but-first-coffee",
+        });
+      };
+      const merchImgs = [];
+
+      const merchImagesRes = await Promise.all(
+        merchImages?.map((e) => {
+          if (e?.length > 30) {
+            return cloudinaryUploader(e);
+          } else {
+            merchImgs.push(e);
+            return false;
+          }
+        })
+      );
+      for (const res of merchImagesRes)
+        res ? merchImgs.push(res?.public_id) : "";
+
+      let imgDisplayCloudinary = await (imageDisplay.length > 30
+        ? cloudinaryUploader(imageDisplay)
+        : imageDisplay);
+      if (typeof imgDisplayCloudinary !== "string")
+        imgDisplayCloudinary = imgDisplayCloudinary.public_id;
+      await Merch.updateOne(
+        { _id },
+        {
+          name: merchName,
+          price: merchPrice,
+          imageDisplay: imgDisplayCloudinary,
+          merchImages: merchImgs,
+          newBadge,
+          size,
+          availability,
+          color,
+          brand,
+          description: merchDesc,
+          features,
+        }
+      );
+      const product = await Merch.findOne({ _id });
+      res.status(200).json(product);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      console.log(error);
+      res.status(500).json(error);
     }
   }
 }
