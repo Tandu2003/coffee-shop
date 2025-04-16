@@ -82,6 +82,17 @@ class MerchController {
 
   // [DELETE] /api/merch/:id
   async deleteMerch(req, res) {
+    const { id } = req.params;
+    try { 
+      await Merch.findByIdAndDelete({ _id: id });
+      res.status(200).json({ message: "Merch deleted" });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  }
+
+  // [PUT] /api/merch/:id
+  async putMerch(req, res) {
     try {
       const {
         merchName,
