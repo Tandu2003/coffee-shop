@@ -8,7 +8,7 @@ const SALT_ROUNDS = 12;
  * @param {string} password - Mật khẩu gốc
  * @returns {Promise<string>} - Mật khẩu đã được băm
  */
-const hashPassword = async (password) => {
+const bcryptHash = async (password) => {
   try {
     const salt = await bcrypt.genSalt(SALT_ROUNDS);
     return await bcrypt.hash(password, salt);
@@ -23,7 +23,7 @@ const hashPassword = async (password) => {
  * @param {string} hashedPassword - Mật khẩu đã được băm
  * @returns {Promise<boolean>} - Trả về true nếu trùng khớp, false nếu không
  */
-const comparePassword = async (password, hashedPassword) => {
+const bcryptCompare = async (password, hashedPassword) => {
   try {
     return await bcrypt.compare(password, hashedPassword);
   } catch (error) {
@@ -31,5 +31,4 @@ const comparePassword = async (password, hashedPassword) => {
   }
 };
 
-module.exports = { hashPassword, comparePassword };
-
+module.exports = { bcryptHash, bcryptCompare };

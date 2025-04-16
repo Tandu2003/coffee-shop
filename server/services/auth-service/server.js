@@ -8,6 +8,7 @@ const rateLimit = require("express-rate-limit");
 const MongoStore = require("connect-mongo");
 const connectDB = require("./src/config/database");
 const authRoutes = require("./src/routes/auth.routes");
+const accountRoutes = require("./src/routes/account.routes");
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -76,9 +77,9 @@ connectDB();
 
 //ĐỊNH TUYẾN API
 app.use("/api/auth", authRoutes);
+app.use("/api/accounts", accountRoutes);
 
 // KHỞI CHẠY SERVER
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
-

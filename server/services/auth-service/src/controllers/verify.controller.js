@@ -87,7 +87,7 @@ class VerifyController {
             "Email Verification Failed",
             "The link has expired. Please register again!",
             "Go to Register",
-            "http://localhost:3000/account/register"
+            `${process.env.CLIENT_URL}/register`
           )
         );
       }
@@ -99,7 +99,7 @@ class VerifyController {
             "Email Verification Failed",
             "The link has expired. Please register again!",
             "Go to Register",
-            "http://localhost:3000/account/register"
+            `${process.env.CLIENT_URL}/register`
           )
         );
       }
@@ -111,7 +111,7 @@ class VerifyController {
             "Email Verification Failed",
             "The link has expired. Please register again!",
             "Go to Register",
-            "http://localhost:3000/account/register"
+            `${process.env.CLIENT_URL}/register`
           )
         );
       }
@@ -125,7 +125,7 @@ class VerifyController {
           "Email Verification Success",
           "Your email has been verified!",
           "Go to Login",
-          "http://localhost:3000/account/login"
+          `${process.env.CLIENT_URL}/login"`
         )
       );
     } catch (error) {
@@ -135,7 +135,7 @@ class VerifyController {
           "Email Verification Failed",
           "The link has expired. Please register again!",
           "Go to Register",
-          "http://localhost:3000/account/register"
+          `${process.env.CLIENT_URL}/register`
         )
       );
     }
