@@ -5,8 +5,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies and add helmet
+RUN npm ci --only=production && npm install --no-save helmet
 
 # Copy application code
 COPY . .
