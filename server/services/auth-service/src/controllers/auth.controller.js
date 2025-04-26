@@ -1,15 +1,19 @@
 const { bcryptHash, bcryptCompare } = require("../config/bcryptjs");
 const Account = require("../models/account.model");
 const sendVerificationEmail = require("../config/nodemailer");
+const { generateToken, verifyToken } = require("../config/jwt");
 
 class AuthController {
   // [GET] /api/auth
   getAuth(req, res) {
-    if (req.session.user) {
-      res.status(200).json({ loggedIn: true, user: req.session.user });
-    } else {
-      res.status(400).json({ loggedIn: false });
+    const token = req.headers.authorization?.split(" ")[1];
+    if (token) {
+      const decoded = verifyToken(token);
+      if (decoded) {
+        return res.status(200).json({ loggedIn: true, user: decoded });
+      }
     }
+    return res.status(400).json({ loggedIn: false });
   }
 
   // [POST] /api/auth/register
@@ -53,11 +57,9 @@ class AuthController {
 
   // [POST] /api/auth/login
   async postLogin(req, res) {
-    let { identifier, password, remember = false } = req.body;
-    identifier = identifier?.trim().toLowerCase();
-    password = password?.trim();
-
     try {
+      const { identifier, password, remember } = req.body;
+
       const existingAccount = await Account.findOne({
         $or: [{ email: identifier }, { username: identifier }],
       });
@@ -77,20 +79,19 @@ class AuthController {
         });
       }
 
-      if (remember) {
-        req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
-      }
-
-      req.session.user = {
+      const user = {
         _id: existingAccount._id,
         username: existingAccount.username,
         email: existingAccount.email,
         isAdmin: existingAccount.isAdmin,
       };
 
+      const token = generateToken(user);
+
       return res.status(200).json({
         loggedIn: true,
-        user: req.session.user,
+        user,
+        token,
         message: "Successful login ><",
       });
     } catch (error) {
@@ -100,13 +101,7 @@ class AuthController {
 
   // [POST] /api/auth/logout
   postLogout(req, res) {
-    req.session.destroy((error) => {
-      if (error) {
-        return res.status(500).json({ message: "Internal server error" });
-      }
-      res.clearCookie("userId");
-      return res.status(200).json({ message: "Logout success!!!" });
-    });
+    res.status(200).json({ message: "Logged out successfully" });
   }
 }
 

@@ -82,6 +82,7 @@ services:
       - NODE_ENV=production
       - AUTH_EMAIL=${AUTH_EMAIL}
       - AUTH_PASS=${AUTH_PASS}
+      - JWT_SECRET=24926e4536bec76a9b996cccf13caff461b96f7eeab756d95a7c51dedc8e8b8e419acaad1498aa6709e82eaa5f25e15e9b45e8ca3da34aa304062aaee128593ebb0083cda148c19937ad42245598c038762a8c7082e111343ba582a391703b63fc4933637d9a4fab937a087e96487a11326b300429691a18037c89ac30474188f207567bbf9cf5afd74f5c8c4ce46b2fd2d8a4c5c432e22d36ffa8da508fbcf5df7572bc77ef12294d321ebc651163f10088f381f8b35fcd74bdb9ab51952bf1ba57ba3f18cf9ae39d4fac93d859ccb60ff09e9fbd765370f8edb0b37143cd536bd89bc3135dabbe364586b98f5e47d6812bc2aeb4cce7765575419ba3ee5ed1
     depends_on: []  # Remove MongoDB dependency as we're using cloud MongoDB
     volumes:
       - auth_service_logs:/app/logs

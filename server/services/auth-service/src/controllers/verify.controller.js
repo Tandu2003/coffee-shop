@@ -1,15 +1,19 @@
 const Account = require("../models/account.model");
 const Verification = require("../models/verification.model");
 const { bcryptCompare } = require("../config/bcryptjs");
+const { verifyToken } = require("../config/jwt");
 
 class VerifyController {
   // [GET] /api/auth/user/verify
   getVerify(req, res) {
-    if (req.session.user) {
-      res.status(200).json({ loggedIn: true, user: req.session.user });
-    } else {
-      res.status(400).json({ loggedIn: false });
+    const token = req.headers.authorization?.split(" ")[1];
+    if (token) {
+      const decoded = verifyToken(token);
+      if (decoded) {
+        return res.status(200).json({ loggedIn: true, user: decoded });
+      }
     }
+    return res.status(400).json({ loggedIn: false });
   }
 
   // [GET] /api/auth/user/verify/:userId/:uniqueString
