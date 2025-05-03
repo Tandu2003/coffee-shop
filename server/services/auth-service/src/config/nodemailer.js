@@ -1,11 +1,11 @@
-const { v4 } = require("uuid");
-const nodemailer = require("nodemailer");
-const { bcryptHash } = require("../config/bcryptjs");
-const Verification = require("../models/verification.model");
-require("dotenv").config();
+const { v4 } = require('uuid');
+const nodemailer = require('nodemailer');
+const { bcryptHash } = require('../config/bcryptjs');
+const Verification = require('../models/verification.model');
+require('dotenv').config();
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
+  host: 'smtp.gmail.com',
   port: 465,
   secure: true,
   auth: {
@@ -22,13 +22,13 @@ const sendVerificationEmail = async (account, res) => {
   const mailOptions = {
     from: `OK BUT FIRST COFFEE <${process.env.AUTH_EMAIL}>`,
     to: email,
-    subject: "Verify Your Email",
+    subject: 'Verify Your Email',
     html: `
         <h3>Dear ${username}</h3>
         <p>Verify your email address to complete the signup and login into your account.</p>
         <p>This link <b>expires in 15 minute</b>.</p>
         <h4>Press <a href=${
-          currentUrl + "/api/auth/user/verify/" + _id + "/" + uniqueString
+          currentUrl + '/api/auth/user/verify/' + _id + '/' + uniqueString
         }>here</a> to proceed.</h4>`,
   };
 

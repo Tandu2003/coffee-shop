@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const verification = new mongoose.Schema(
   {
@@ -11,4 +11,4 @@ const verification = new mongoose.Schema(
   },
 );
 
-module.exports = mongoose.model("Verification", verification);
+module.exports = mongoose.model('Verification', verification);

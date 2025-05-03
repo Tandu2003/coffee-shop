@@ -1,26 +1,20 @@
-const Accounts = require("../models/account.model.js");
+const Accounts = require('../models/account.model.js');
 
 class AccountController {
   // [GET] /api/accounts
-  async getAll(req, res) {
+  async getAccounts(req, res) {
     try {
-      const data = await Accounts.find({});
-      const filterPassword = data.map(({ _id, username, email, verified, isAdmin }) => ({
-        _id,
-        username,
-        email,
-        verified,
-        isAdmin,
-      }));
-      res.json(filterPassword);
+      const data = await Accounts.find().select('-password -__v');
+      res.status(200).json(data);
     } catch (error) {
-      // res.status(500).json({ err: error });
-      res.json({ status: 500, message: error });
+      res.status(500).json({
+        message: 'Get accounts failed',
+      });
     }
   }
 
-  // [POST] /api/accounts
-  async put(req, res) {
+  // [PUT] /api/accounts
+  async updateAdmin(req, res) {
     const email = req.params.email;
     const { isAdmin } = req.body;
     try {
@@ -28,9 +22,13 @@ class AccountController {
         isAdmin: isAdmin,
       });
 
-      res.json({ status: 200, message: "Update successfully" });
+      res.status(200).json({
+        message: 'Update account successfully',
+      });
     } catch (error) {
-      res.json({ status: 500, message: error });
+      res.status(500).json({
+        message: 'Update account failed',
+      });
     }
   }
 }
