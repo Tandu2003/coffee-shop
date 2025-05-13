@@ -14,6 +14,7 @@ services:
       - auth-service
       - product-service
       - merch-service
+      - cart-service
     environment:
       - NODE_ENV=production
       # Đảm bảo port cho auth-service là 5001, không phải 5000
@@ -21,6 +22,7 @@ services:
       - REACT_APP_API_AUTH=http://localhost:5001
       - REACT_APP_API_PRODUCT=http://localhost:5002
       - REACT_APP_API_MERCH=http://localhost:5003
+      - REACT_APP_API_CART=http://localhost:5004
     networks:
       - frontend-network
       - backend-network
@@ -38,12 +40,14 @@ services:
       - auth-service
       - product-service
       - merch-service
+      - cart-service
     environment:
       - PORT=3001
       - NODE_ENV=production
       - PRODUCT_SERVICE_URL=http://product-service:5002
       - MERCH_SERVICE_URL=http://merch-service:5003
       - AUTH_SERVICE_URL=http://auth-service:5001
+      - CART_SERVICE_URL=http://cart-service:5004
       - PRODUCT_GRPC_URL=product-service:50051
       - MERCH_GRPC_URL=merch-service:50052
       - AUTH_GRPC_URL=auth-service:50053
@@ -162,6 +166,28 @@ services:
       retries: 3
       start_period: 15s
 
+  # Cart microservice
+  cart-service:
+    build:
+      context: ./server/services/cart-service
+      dockerfile: Dockerfile
+    container_name: okbf-cart-service
+    ports:
+      - "5004:5004"  # Expose port to host for direct access
+    expose:
+      - "5004"
+    environment:
+      - PORT=5004
+      - MONGO_URI=mongodb+srv://coffeedb:_aecc%23KTTKPM@coffeeshop.eo6bc.mongodb.net/coffeeshopdb?retryWrites=true&w=majority&appName=CoffeeShop
+      - NODE_ENV=production
+      - JWT_SECRET=your_jwt_secret_key_here
+    volumes:
+      - cart_service_logs:/app/logs
+    networks:
+      - backend-network
+      - frontend-network
+    restart: unless-stopped
+
   # MongoDB database
   mongodb:
     image: mongo:latest
@@ -201,3 +227,4 @@ volumes:
   auth_service_logs:
   product_service_logs:
   merch_service_logs:
+  cart_service_logs:
