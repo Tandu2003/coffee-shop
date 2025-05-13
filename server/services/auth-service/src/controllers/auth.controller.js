@@ -1,20 +1,16 @@
 const { bcryptHash, bcryptCompare } = require('../config/bcryptjs');
 const Account = require('../models/account.model');
 const sendVerificationEmail = require('../config/nodemailer');
-const {
-  generateAccessToken,
-  generateRefreshToken,
-  verifyAccessToken,
-} = require('../utils/jwtTokens');
+const { generateToken, verifyToken } = require('../utils/jwtTokens');
 
 class AuthController {
   // [GET] /api/auth
   getAuth(req, res) {
-    const token = req.cookies?.accessToken;
+    const token = req.cookies?.token;
 
     if (!token) return res.status(401).json({ loggedIn: false });
 
-    const user = verifyAccessToken(token);
+    const user = verifyToken(token);
     if (!user) return res.status(401).json({ loggedIn: false });
 
     return res.status(200).json({ loggedIn: true, user });
@@ -85,21 +81,13 @@ class AuthController {
         isAdmin: account.isAdmin,
       };
 
-      const accessToken = generateAccessToken(userPayload);
-      const refreshToken = generateRefreshToken(userPayload);
+      const token = generateToken(userPayload);
 
-      res.cookie('accessToken', accessToken, {
+      res.cookie('token', token, {
         httpOnly: true,
         secure: true,
         sameSite: 'Strict',
-        maxAge: remember ? 7 * 24 * 60 * 60 * 1000 : 15 * 60 * 1000, // 7 days or 15 minutes
-      });
-
-      res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'Strict',
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        maxAge: remember ? 7 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
       return res.status(200).json({
@@ -115,33 +103,8 @@ class AuthController {
 
   // [POST] /api/auth/logout
   postLogout(req, res) {
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
-    return res.status(200).json({ message: 'Logged out successfully' });
-  }
-
-  // [POST] /api/auth/refresh-token
-  async postRefreshToken(req, res) {
-    const refreshToken = req.cookies?.refreshToken;
-    if (!refreshToken) return res.status(401).json({ loggedIn: false });
-
-    try {
-      const user = verifyAccessToken(refreshToken);
-      if (!user) return res.status(401).json({ loggedIn: false });
-
-      const newAccessToken = generateAccessToken(user);
-      res.cookie('accessToken', newAccessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'Strict',
-        maxAge: 15 * 60 * 1000, // 15 minutes
-      });
-
-      return res.status(200).json({ loggedIn: true, user });
-    } catch (error) {
-      console.error('[Refresh Token Error]', error);
-      return res.status(500).json({ message: 'Internal server error' });
-    }
+    res.clearCookie('token');
+    return res.status(200).json({ message: 'Logout successful' });
   }
 }
 

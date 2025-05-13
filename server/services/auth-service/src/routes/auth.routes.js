@@ -7,10 +7,9 @@ const Router = express.Router();
 
 // Routes for /api/auth
 Router.get('/', AuthController.getAuth);
-Router.post('/register', AuthController.postRegister);
 Router.post('/login', AuthController.postLogin);
 Router.post('/logout', AuthController.postLogout);
-Router.post('/refresh-token', AuthController.postRefreshToken);
+Router.post('/register', AuthController.postRegister);
 
 // Routes for /user/verify
 Router.get('/user/verify', VerifyController.getVerify);

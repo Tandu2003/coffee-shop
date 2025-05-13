@@ -1,13 +1,13 @@
-const { verifyAccessToken } = require('../utils/jwtTokens');
+const { verifyToken } = require('../utils/jwtTokens');
 
 const checkAdmin = (req, res, next) => {
-  const token = req.cookies?.accessToken;
+  const token = req.cookies?.token;
 
   if (!token) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
-  const user = verifyAccessToken(token);
+  const user = verifyToken(token);
 
   if (!user) {
     return res.status(401).json({ message: 'Unauthorized' });

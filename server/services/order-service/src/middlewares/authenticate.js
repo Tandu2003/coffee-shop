@@ -1,8 +1,8 @@
-const { verifyAccessToken } = require('../utils/jwtTokens');
+const { verifyToken } = require('../utils/jwtTokens');
 
 const authenticate = (req, res, next) => {
   try {
-    let token = req.cookies?.accessToken;
+    let token = req.cookies?.token;
 
     if (!token && req.headers.authorization) {
       const authHeader = req.headers.authorization;
@@ -17,7 +17,7 @@ const authenticate = (req, res, next) => {
         .json({ message: 'Unauthorized: No token provided' });
     }
 
-    const decoded = verifyAccessToken(token);
+    const decoded = verifyToken(token);
     if (!decoded) {
       return res.status(401).json({ message: 'Unauthorized: Invalid token' });
     }
