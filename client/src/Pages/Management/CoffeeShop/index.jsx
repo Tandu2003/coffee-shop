@@ -7,6 +7,7 @@ import { ShowImage, ShowImages } from "../Components/ShowImage";
 import Breadcrumb from "../../../Components/Breadcrumb";
 import LoadingSpinner from "../../../Components/Loading";
 import PopUp from "../../../Components/PopUp";
+import ProductUpdateNotification from "../../../Components/ProductUpdateNotification";
 
 import "./CoffeeShop.scss";
 
@@ -460,8 +461,8 @@ const ProductManagement = () => {
           {busy || !fetchProducts ? (
             <LoadingSpinner />
           ) : (
-            <div className="container">
-              <div className="product-management-wrapper">
+            <div className="container">              <div className="product-management-wrapper">
+                <ProductUpdateNotification />
                 <div className="list-products">
                   <h3 className="product-title">List Of Products</h3>
                   <div className="product-table">

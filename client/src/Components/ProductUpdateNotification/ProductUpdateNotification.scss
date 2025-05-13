@@ -1,0 +1,98 @@
+/* filepath: d:\dev\ktvttpm\coffee-shop\client\src\Components\ProductUpdateNotification\ProductUpdateNotification.scss */
+.product-update-notification {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f8f5f2;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.notification-header h4 {
+  font-size: 16px;
+  margin: 0;
+  color: #5a3921;
+}
+
+.last-updated {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 10px;
+}
+
+.notification-content {
+  margin-bottom: 15px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.notification-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.notification-actions button {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.refresh-button {
+  background-color: #5a3921;
+  color: white;
+}
+
+.refresh-button:hover {
+  background-color: #724b2e;
+}
+
+.refresh-button:disabled {
+  background-color: #b9a89e;
+  cursor: not-allowed;
+}
+
+.notification-status {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.notification-status.success {
+  color: #28a745;
+}
+
+.notification-status.loading {
+  color: #ffc107;
+}
+
+.notification-status i {
+  margin-right: 5px;
+  font-size: 16px;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(90, 57, 33, 0.3);
+  border-radius: 50%;
+  border-top-color: #5a3921;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
