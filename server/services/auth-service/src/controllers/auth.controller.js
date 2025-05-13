@@ -11,6 +11,7 @@ class AuthController {
   // [GET] /api/auth
   getAuth(req, res) {
     const token = req.cookies?.accessToken;
+
     if (!token) return res.status(401).json({ loggedIn: false });
 
     const user = verifyAccessToken(token);

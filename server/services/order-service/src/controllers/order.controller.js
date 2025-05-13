@@ -33,7 +33,7 @@ class OrderController {
       }
 
       // Check if user is authorized to view this order
-      if (order.userId.toString() !== req.user.id && !req.user.isAdmin) {
+      if (order.userId.toString() !== req.user._id && !req.user.isAdmin) {
         return res
           .status(403)
           .json({ message: 'Not authorized to view this order' });
@@ -59,7 +59,7 @@ class OrderController {
       }
 
       // Check if user is requesting their own orders or is admin
-      if (userId !== req.user.id && !req.user.isAdmin) {
+      if (userId !== req.user._id && !req.user.isAdmin) {
         return res
           .status(403)
           .json({ message: 'Not authorized to view these orders' });
@@ -127,15 +127,41 @@ class OrderController {
       // Create order items first
       const orderItemsIds = [];
       for (const item of orderItems) {
-        if (!item.name || !item.quantity || !item.price || !item.productId) {
+        if (
+          !item.name ||
+          !item.quantity ||
+          !item.price ||
+          !item.productId ||
+          !item.productType
+        ) {
           await session.abortTransaction();
           return res.status(400).json({ message: 'Invalid order item data' });
+        }
+
+        // Validate options based on product type
+        if (
+          item.productType === 'coffee' &&
+          (!item.options?.bagSize || !item.options?.grind)
+        ) {
+          await session.abortTransaction();
+          return res.status(400).json({
+            message: 'Coffee products require bagSize and grind options',
+          });
+        }
+
+        if (
+          item.productType === 'merch' &&
+          (!item.options?.size || !item.options?.color)
+        ) {
+          await session.abortTransaction();
+          return res
+            .status(400)
+            .json({ message: 'Merch products require size and color options' });
         }
 
         const newOrderItem = new OrderItem({
           name: item.name,
           quantity: item.quantity,
-          image: item.image,
           price: item.price,
           productId: item.productId,
           productType: item.productType,
@@ -155,7 +181,7 @@ class OrderController {
         shippingPrice,
         taxPrice,
         totalPrice,
-        userId: req.user.id,
+        userId: req.user._id,
         notes,
       });
 
@@ -242,7 +268,7 @@ class OrderController {
       }
 
       // Check if user is authorized to update this order
-      if (order.userId.toString() !== req.user.id && !req.user.isAdmin) {
+      if (order.userId.toString() !== req.user._id && !req.user.isAdmin) {
         return res
           .status(403)
           .json({ message: 'Not authorized to update this order' });
@@ -327,7 +353,7 @@ class OrderController {
       }
 
       // Check if user is authorized to cancel this order
-      if (order.userId.toString() !== req.user.id && !req.user.isAdmin) {
+      if (order.userId.toString() !== req.user._id && !req.user.isAdmin) {
         return res
           .status(403)
           .json({ message: 'Not authorized to cancel this order' });

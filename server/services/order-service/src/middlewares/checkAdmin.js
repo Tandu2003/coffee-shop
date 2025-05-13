@@ -1,22 +1,19 @@
-const { verifyAccessToken } = require('../utils/jwtTokens');
-
 const checkAdmin = (req, res, next) => {
-  const token = req.cookies?.accessToken;
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized: No user found' });
+    }
 
-  if (!token) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-
-  const user = verifyAccessToken(token);
-
-  if (!user) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-
-  if (user.isAdmin) {
-    next();
-  } else {
-    return res.status(403).json({ message: 'Forbidden' });
+    if (req.user.isAdmin) {
+      next();
+    } else {
+      return res
+        .status(403)
+        .json({ message: 'Forbidden: Admin access required' });
+    }
+  } catch (error) {
+    console.error('Admin check error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 

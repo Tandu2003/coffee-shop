@@ -1,10 +1,11 @@
-import axios from "axios";
+import axios from 'axios';
 
 axios.defaults.withCredentials = true;
 
 const urlAuth = process.env.REACT_APP_API_AUTH;
 const urlProduct = process.env.REACT_APP_API_PRODUCT;
 const urlMerch = process.env.REACT_APP_API_MERCH;
+const urlOrder = process.env.REACT_APP_API_ORDER;
 
 export const apiAuth = axios.create({
   baseURL: `${urlAuth}/api`,
@@ -18,3 +19,6 @@ export const apiMerch = axios.create({
   baseURL: `${urlMerch}/api`,
 });
 
+export const apiOrder = axios.create({
+  baseURL: `${urlOrder}/api`,
+});

@@ -1,16 +1,33 @@
 const { verifyAccessToken } = require('../utils/jwtTokens');
 
 const authenticate = (req, res, next) => {
-  const token = req.cookies.accessToken;
-  if (!token) {
-    return res.status(401).json({ message: 'Unauthorized' });
+  try {
+    let token = req.cookies?.accessToken;
+
+    if (!token && req.headers.authorization) {
+      const authHeader = req.headers.authorization;
+      if (authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      }
+    }
+
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: 'Unauthorized: No token provided' });
+    }
+
+    const decoded = verifyAccessToken(token);
+    if (!decoded) {
+      return res.status(401).json({ message: 'Unauthorized: Invalid token' });
+    }
+
+    req.user = decoded;
+    next();
+  } catch (error) {
+    console.error('Authentication error:', error);
+    res.status(401).json({ message: 'Unauthorized: Authentication failed' });
   }
-  const decoded = verifyAccessToken(token);
-  if (!decoded) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-  req.user = decoded;
-  next();
 };
 
 module.exports = authenticate;
