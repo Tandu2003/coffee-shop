@@ -1,11 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Image } from 'cloudinary-react';
+import { useContext, useState, useEffect } from 'react';
+import AuthContext from '../../Context/AuthProvider';
+import { CartApi } from '../../Api/cart';
 
 import iconCart from '../../Assets/svg/iconCart.svg';
 import iconHeart from '../../Assets/svg/iconHeart.svg';
 import './Card.scss';
-import { useContext, useState, useEffect } from 'react';
-import AuthContext from '../../Context/AuthProvider';
 
 const Card = ({
   title,
@@ -15,6 +16,8 @@ const Card = ({
   price,
   idProduct,
   path = '#',
+  type = 'coffee',
+  options = {},
   ...props
 }) => {
   const [isInWishlist, setIsInWishlist] = useState(false);
@@ -22,6 +25,8 @@ const Card = ({
     show: false,
     message: '',
   });
+  const { auth } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   // Check if the product is already in wishlist
   useEffect(() => {
@@ -29,43 +34,43 @@ const Card = ({
     setIsInWishlist(wishlist.some((item) => item.id === idProduct));
   }, [idProduct]);
 
-  const handleClick = () => {
-    // Get existing cart or initialize new one
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+  const handleClick = async () => {
+    if (!auth.loggedIn) {
+      navigate('/login');
+      return;
+    }
 
-    // Check if product already in cart
-    const existingItemIndex = cart.findIndex((item) => item.id === idProduct);
-
-    if (existingItemIndex >= 0) {
-      // Increase quantity if product already in cart
-      cart[existingItemIndex].quantity += 1;
-    } else {
-      // Add new product to cart
-      cart.push({
+    try {
+      const item = {
         id: idProduct,
         title,
         img,
         price,
         path,
         quantity: 1,
+        type,
+        options,
+      };
+
+      await CartApi.addToCart(item);
+
+      // Show notification
+      setNotification({
+        show: true,
+        message: `Added ${title} to cart!`,
+      });
+
+      // Hide notification after 3 seconds
+      setTimeout(() => {
+        setNotification({ show: false, message: '' });
+      }, 3000);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      setNotification({
+        show: true,
+        message: 'Failed to add item to cart',
       });
     }
-
-    // Save updated cart to localStorage
-    localStorage.setItem('cart', JSON.stringify(cart));
-
-    // Show notification
-    setNotification({
-      show: true,
-      message: `Added ${title} to cart!`,
-    });
-
-    // Hide notification after 3 seconds
-    setTimeout(() => {
-      setNotification({ show: false, message: '' });
-    }, 3000);
-
-    console.log('Added to cart:', title);
   };
 
   const toggleWishlist = (e) => {
@@ -136,6 +141,7 @@ const Card = ({
           </button>
         </div>
       </div>
+
       <div className="card-content">
         <h4 className="card-title">
           <Link to={path}>{title}</Link>

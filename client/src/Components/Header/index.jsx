@@ -14,6 +14,7 @@ import iconClose from '../../Assets/svg/iconClose.svg';
 import arrowDown from '../../Assets/svg/arrowDown.svg';
 import { Auth } from '../../Api/auth';
 import { Image } from 'cloudinary-react';
+import { CartApi } from '../../Api/cart';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -34,17 +35,15 @@ const Header = () => {
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
 
-  // Function to load cart data from localStorage
-  const loadCartData = () => {
-    const cartData = JSON.parse(localStorage.getItem('cart')) || [];
-    setCartItems(cartData);
-
-    // Calculate total price
-    const total = cartData.reduce((sum, item) => {
-      return sum + item.price * item.quantity;
-    }, 0);
-
-    setCartTotal(total);
+  // Function to load cart data
+  const loadCartData = async () => {
+    try {
+      const cartData = await CartApi.getCart();
+      setCartItems(cartData.items || []);
+      setCartTotal(cartData.totalPrice || 0);
+    } catch (error) {
+      console.error('Error loading cart:', error);
+    }
   };
 
   // Update cart data when showing cart or when component mounts
@@ -101,27 +100,13 @@ const Header = () => {
   };
 
   // Function to remove item from cart
-  const removeFromCart = (itemId, optionsToMatch = {}) => {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-    const updatedCart = cart.filter((item) => {
-      if (item.id !== itemId) return true;
-
-      // If we have specific options to match (like size, color, grind)
-      if (Object.keys(optionsToMatch).length > 0) {
-        for (const [key, value] of Object.entries(optionsToMatch)) {
-          if (item.options && item.options[key] !== value) {
-            return true;
-          }
-        }
-        return false;
-      }
-
-      return false;
-    });
-
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
-    loadCartData();
+  const removeFromCart = async (itemId) => {
+    try {
+      await CartApi.removeCartItem(itemId);
+      loadCartData();
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+    }
   };
 
   const handleOnChange = (e) => {
@@ -376,7 +361,7 @@ const Header = () => {
                                     <div className="item-image">
                                       <Image
                                         cloudName="ok-but-first-coffee"
-                                        publicId={item.img}
+                                        publicId={item.image}
                                         crop="scale"
                                         width="60"
                                         height="60"
@@ -384,7 +369,7 @@ const Header = () => {
                                     </div>
                                     <div className="item-details">
                                       <div className="item-name">
-                                        {item.title}
+                                        {item.name}
                                       </div>
                                       {item.options && (
                                         <div className="item-options">
@@ -417,19 +402,14 @@ const Header = () => {
                                         <span className="item-total">
                                           $
                                           {(item.price * item.quantity).toFixed(
-                                            2
+                                            2,
                                           )}
                                         </span>
                                       </div>
                                     </div>
                                     <button
                                       className="remove-item"
-                                      onClick={() =>
-                                        removeFromCart(
-                                          item.id,
-                                          item.options || {}
-                                        )
-                                      }
+                                      onClick={() => removeFromCart(item._id)}
                                     >
                                       ×
                                     </button>
@@ -845,14 +825,14 @@ const Header = () => {
                           <div className="item-image">
                             <Image
                               cloudName="ok-but-first-coffee"
-                              publicId={item.img}
+                              publicId={item.image}
                               crop="scale"
                               width="60"
                               height="60"
                             />
                           </div>
                           <div className="item-details">
-                            <div className="item-name">{item.title}</div>
+                            <div className="item-name">{item.name}</div>
                             {item.options && (
                               <div className="item-options">
                                 {item.options.size && (
@@ -880,9 +860,7 @@ const Header = () => {
                           </div>
                           <button
                             className="remove-item"
-                            onClick={() =>
-                              removeFromCart(item.id, item.options || {})
-                            }
+                            onClick={() => removeFromCart(item._id)}
                           >
                             ×
                           </button>

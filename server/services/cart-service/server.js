@@ -1,10 +1,11 @@
-const express = require("express");
-const cors = require("cors");
+const express = require('express');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
-const connectDB = require("./src/config/database");
-const cartRoutes = require("./src/routes/cart.routes");
+const connectDB = require('./src/config/database');
+const cartRoutes = require('./src/routes/cart.routes');
 
-require("dotenv").config();
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5004;
@@ -12,21 +13,21 @@ const PORT = process.env.PORT || 5004;
 // Enable CORS
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: ['http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
-  })
+  }),
 );
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(cookieParser());
 // Connect to MongoDB
 connectDB();
 
 // Routes
-app.use("/api/cart", cartRoutes);
+app.use('/api/cart', cartRoutes);
 
 // Run server
 app.listen(PORT, () => {

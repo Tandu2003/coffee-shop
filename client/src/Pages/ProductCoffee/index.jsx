@@ -5,6 +5,7 @@ import { ProductApi } from '../../Api/product';
 import { Image } from 'cloudinary-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper';
+import { CartApi } from '../../Api/cart';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -175,54 +176,41 @@ const ProductDetail = () => {
     setBagSize(item);
   };
 
-  const addToCart = () => {
-    // Get existing cart or initialize new one
-    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+  const addToCart = async () => {
+    try {
+      const item = {
+        id: product._id,
+        title: product.name,
+        img: product.productImages?.[0],
+        price: product.price,
+        path: `/coffee/${product._id}`,
+        quantity: quantity,
+        type: 'coffee',
+        options: {
+          bagSize: bagSize,
+          grind: grind,
+        },
+      };
 
-    // Create product object with selected options
-    const productToAdd = {
-      id: product._id,
-      title: product.name,
-      img: product.productImages?.[0],
-      price: product.price,
-      path: `/coffee/${product._id}`,
-      quantity: quantity,
-      options: {
-        bagSize: bagSize,
-        grind: grind,
-      },
-      type: 'coffee',
-    };
+      await CartApi.addToCart(item);
 
-    // Check if product with same options already in cart
-    const existingItemIndex = cart.findIndex(
-      (item) =>
-        item.id === productToAdd.id &&
-        item.options?.bagSize === productToAdd.options?.bagSize &&
-        item.options?.grind === productToAdd.options?.grind
-    );
+      // Show notification
+      setNotification({
+        show: true,
+        message: `Added ${quantity} ${product.name} to cart successfully!`,
+      });
 
-    if (existingItemIndex >= 0) {
-      // Update quantity if product already in cart
-      cart[existingItemIndex].quantity += quantity;
-    } else {
-      // Add new product to cart
-      cart.push(productToAdd);
+      // Hide notification after 3 seconds
+      setTimeout(() => {
+        setNotification({ show: false, message: '' });
+      }, 3000);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      setNotification({
+        show: true,
+        message: 'Failed to add item to cart',
+      });
     }
-
-    // Save updated cart to localStorage
-    localStorage.setItem('cart', JSON.stringify(cart));
-
-    // Show notification
-    setNotification({
-      show: true,
-      message: `Added ${quantity} ${product.name} to cart successfully!`,
-    });
-
-    // Hide notification after 3 seconds
-    setTimeout(() => {
-      setNotification({ show: false, message: '' });
-    }, 3000);
   };
 
   const ShowImage = () => {
@@ -490,7 +478,7 @@ const ProductDetail = () => {
                             </div>
                             <p>{ingredient.name}</p>
                           </div>
-                        )
+                        ),
                     )}
                   </div>
                   <div className="center-additional">
@@ -513,7 +501,7 @@ const ProductDetail = () => {
                             </div>
                             <p>{ingredient.name}</p>
                           </div>
-                        )
+                        ),
                     )}
                   </div>
                 </div>
@@ -530,7 +518,7 @@ const ProductDetail = () => {
                           </div>
                           <p>{ingredient.name}</p>
                         </div>
-                      )
+                      ),
                   )}
                 </div>
               </div>

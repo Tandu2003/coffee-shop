@@ -1,55 +1,66 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const cartItemSchema = new mongoose.Schema({
-  productId: { 
-    type: String, 
-    required: true 
+  productId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    refPath: 'productType',
   },
-  productType: { 
-    type: String, 
-    enum: ['coffee', 'merch'], 
-    required: true 
-  },
-  title: { 
-    type: String, 
-    required: true 
-  },
-  price: { 
-    type: Number, 
-    required: true 
-  },
-  quantity: { 
-    type: Number, 
-    required: true, 
-    default: 1 
-  },
-  image: { 
-    type: String, 
-    required: true 
-  },
-  options: {
-    bagSize: { type: Number },
-    grind: { type: String },
-    size: { type: String },
-    color: { type: String }
-  }
-});
-
-const cartSchema = new mongoose.Schema({
-  userId: {
+  productType: {
     type: String,
     required: true,
-    unique: true
+    enum: ['coffee', 'merch'],
   },
-  items: [cartItemSchema],
-  createdAt: {
-    type: Date,
-    default: Date.now
+  name: {
+    type: String,
+    required: true,
   },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
+  image: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+  },
+  quantity: {
+    type: Number,
+    required: true,
+    min: 1,
+  },
+  options: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
 });
 
-module.exports = mongoose.model("Cart", cartSchema);
+const cartSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    items: [cartItemSchema],
+    totalPrice: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
+
+// Calculate total price before saving
+cartSchema.pre('save', function (next) {
+  this.totalPrice = this.items.reduce((total, item) => {
+    return total + item.price * item.quantity;
+  }, 0);
+  next();
+});
+
+const Cart = mongoose.model('Cart', cartSchema);
+
+module.exports = Cart;
