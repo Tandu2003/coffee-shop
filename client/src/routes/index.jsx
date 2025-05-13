@@ -14,6 +14,7 @@ import Admin from '../Pages/Admin';
 import CoffeeShopManagement from '../Pages/Management/CoffeeShop';
 import MerchShopManagement from '../Pages/Management/MerchShop';
 import AccountManagement from '../Pages/Management/Account';
+import OrderManagement from '../Pages/Management/Order';
 import CoffeeClub from '../Pages/CoffeeClub';
 import { useContext } from 'react';
 import AuthContext from '../Context/AuthProvider';
@@ -72,12 +73,12 @@ const RouterApp = () => {
       ),
     },
   ];
-
   // private methods
   const routersPrivate = [
     { path: '/admin/account-management', element: <AccountManagement /> },
     { path: '/admin/coffee-shop', element: <CoffeeShopManagement /> },
     { path: '/admin/merch-shop', element: <MerchShopManagement /> },
+    { path: '/admin/order', element: <OrderManagement /> },
     { path: '/admin', element: <Admin /> },
   ];
 

@@ -16,6 +16,7 @@ const authRoutes = require('./routes/auth.routes');
 const merchRoutes = require('./routes/merch.routes');
 const productRoutes = require('./routes/product.routes');
 const cartRoutes = require('./routes/cart.routes');
+const orderRoutes = require('./routes/order.routes');
 
 // Create Express app
 const app = express();
@@ -68,6 +69,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/merch', merchRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes); 
+app.use('/api/orders', orderRoutes);
 
 // 404 handler
 app.use((req, res) => {
