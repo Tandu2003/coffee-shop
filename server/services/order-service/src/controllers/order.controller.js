@@ -132,7 +132,8 @@ class OrderController {
           !item.quantity ||
           !item.price ||
           !item.productId ||
-          !item.productType
+          !item.productType ||
+          !item.image
         ) {
           await session.abortTransaction();
           return res.status(400).json({ message: 'Invalid order item data' });
@@ -144,9 +145,11 @@ class OrderController {
           (!item.options?.bagSize || !item.options?.grind)
         ) {
           await session.abortTransaction();
-          return res.status(400).json({
-            message: 'Coffee products require bagSize and grind options',
-          });
+          return res
+            .status(400)
+            .json({
+              message: 'Coffee products require bagSize and grind options',
+            });
         }
 
         if (
@@ -162,6 +165,7 @@ class OrderController {
         const newOrderItem = new OrderItem({
           name: item.name,
           quantity: item.quantity,
+          image: item.image,
           price: item.price,
           productId: item.productId,
           productType: item.productType,
