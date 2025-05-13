@@ -5,17 +5,21 @@ module.exports = {
   environment: process.env.NODE_ENV || 'development',
   
   services: {
+    auth: {
+      restUrl: process.env.AUTH_SERVICE_URL || 'http://localhost:5001',
+      grpcUrl: process.env.AUTH_SERVICE_GRPC || 'localhost:50051'
+    },
     product: {
       restUrl: process.env.PRODUCT_SERVICE_URL || 'http://localhost:5002',
-      grpcUrl: process.env.PRODUCT_GRPC_URL || 'localhost:50051'
+      grpcUrl: process.env.PRODUCT_SERVICE_GRPC || 'localhost:50052'
     },
     merch: {
       restUrl: process.env.MERCH_SERVICE_URL || 'http://localhost:5003',
-      grpcUrl: process.env.MERCH_GRPC_URL || 'localhost:50052'
+      grpcUrl: process.env.MERCH_SERVICE_GRPC || 'localhost:50053'
     },
-    auth: {
-      restUrl: process.env.AUTH_SERVICE_URL || 'http://localhost:5001',
-      grpcUrl: process.env.AUTH_GRPC_URL || 'localhost:50053'
+    cart: {
+      restUrl: process.env.CART_SERVICE_URL || 'http://localhost:5004',
+      grpcUrl: process.env.CART_SERVICE_GRPC || 'localhost:50054'
     }
   },
   
