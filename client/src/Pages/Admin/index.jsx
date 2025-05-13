@@ -32,8 +32,7 @@ const Admin = () => {
         </section>
         <section>
           <div className="container">
-            <div className="admin-wrapper">
-              <ul className="list">
+            <div className="admin-wrapper">              <ul className="list">
                 <li className="item">
                   <Link to="/admin/order">List Order</Link>
                 </li>
@@ -44,19 +43,7 @@ const Admin = () => {
                   <Link to="/admin/merch-shop">Merch Shop</Link>
                 </li>
                 <li className="item">
-                  <Link to="/admin/question">Frequently Asked Questions</Link>
-                </li>
-                <li className="item">
-                  <Link to="/admin/blog">New Blog</Link>
-                </li>
-                <li className="item">
                   <Link to="/admin/account-management">Account Management</Link>
-                </li>
-                <li className="item">
-                  <Link to="/admin/reports">Reports & Analytics</Link>
-                </li>
-                <li className="item">
-                  <Link to="/admin/settings">System Settings</Link>
                 </li>
                 <li className="item">
                   <Link to="#" onClick={handleLogout}>
