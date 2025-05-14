@@ -107,7 +107,6 @@ class OrderController {
         !shippingAddress ||
         !paymentMethod ||
         !itemsPrice ||
-        !shippingPrice ||
         !taxPrice ||
         !totalPrice
       ) {
@@ -145,11 +144,9 @@ class OrderController {
           (!item.options?.bagSize || !item.options?.grind)
         ) {
           await session.abortTransaction();
-          return res
-            .status(400)
-            .json({
-              message: 'Coffee products require bagSize and grind options',
-            });
+          return res.status(400).json({
+            message: 'Coffee products require bagSize and grind options',
+          });
         }
 
         if (
@@ -196,7 +193,7 @@ class OrderController {
 
       // Populate order items to return complete order details
       const populatedOrder = await Order.findById(createdOrder._id).populate(
-        'orderItems',
+        'orderItems'
       );
 
       res.status(201).json(populatedOrder);
@@ -242,7 +239,7 @@ class OrderController {
       const updatedOrder = await Order.findByIdAndUpdate(
         id,
         { status },
-        { new: true },
+        { new: true }
       ).populate('orderItems');
 
       res.status(200).json(updatedOrder);
@@ -285,7 +282,7 @@ class OrderController {
           paidAt: Date.now(),
           paymentResult,
         },
-        { new: true },
+        { new: true }
       ).populate('orderItems');
 
       res.status(200).json(updatedOrder);
@@ -328,7 +325,7 @@ class OrderController {
           status: 'Delivered',
           trackingNumber,
         },
-        { new: true },
+        { new: true }
       ).populate('orderItems');
 
       res.status(200).json(updatedOrder);
