@@ -2,11 +2,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useContext } from 'react';
 
 import './Header.scss';
-import api from '../../utils/apiCaller';
 import AuthContext from '../../Context/AuthProvider';
 import logo from '../../Assets/svg/logo.svg';
 import user from '../../Assets/svg/user.svg';
-import cart from '../../Assets/svg/cart.svg';
+import cartIcon from '../../Assets/svg/cart.svg';
 import search from '../../Assets/svg/search.svg';
 import iconUser from '../../Assets/svg/iconUser.svg';
 import iconHeart from '../../Assets/svg/iconHeart.svg';
@@ -15,11 +14,13 @@ import arrowDown from '../../Assets/svg/arrowDown.svg';
 import { Auth } from '../../Api/auth';
 import { Image } from 'cloudinary-react';
 import { CartApi } from '../../Api/cart';
+import CartContext from '../../Context/CartProvider';
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { auth, setAuth } = useContext(AuthContext);
+  const { cart, refreshCart } = useContext(CartContext);
 
   const [y, setY] = useState(window.scrollY);
   const [width, setWidth] = useState(window.innerWidth);
@@ -28,30 +29,17 @@ const Header = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showCart, setShowCart] = useState(false);
-  const [cartItems, setCartItems] = useState([]);
   const [cartTotal, setCartTotal] = useState(0);
   const [post, setPost] = useState(null);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
 
-  // Function to load cart data
-  const loadCartData = async () => {
-    try {
-      const cartData = await CartApi.getCart();
-      setCartItems(cartData.items || []);
-      setCartTotal(cartData.totalPrice || 0);
-    } catch (error) {
-      console.error('Error loading cart:', error);
-    }
-  };
+  const cartItems = cart.items || [];
 
-  // Update cart data when showing cart or when component mounts
   useEffect(() => {
-    if (showCart) {
-      loadCartData();
-    }
-  }, [showCart]);
+    setCartTotal(cart.totalPrice || 0);
+  }, [cart]);
 
   const updateDimensions = () => {
     setWidth(window.innerWidth);
@@ -103,7 +91,7 @@ const Header = () => {
   const removeFromCart = async (itemId) => {
     try {
       await CartApi.removeCartItem(itemId);
-      loadCartData();
+      refreshCart();
     } catch (error) {
       console.error('Error removing item from cart:', error);
     }
@@ -325,7 +313,7 @@ const Header = () => {
                   <div className="hide_pc"></div>
                   <div className="header-middle__item">
                     <Link to="#" onClick={handleShowCart}>
-                      <img src={cart} alt="cart-icon" />
+                      <img src={cartIcon} alt="cart-icon" />
                       {cartItems.length > 0 && (
                         <span className="cart-count">{cartItems.length}</span>
                       )}
@@ -402,7 +390,7 @@ const Header = () => {
                                         <span className="item-total">
                                           $
                                           {(item.price * item.quantity).toFixed(
-                                            2,
+                                            2
                                           )}
                                         </span>
                                       </div>
