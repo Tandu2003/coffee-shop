@@ -2,7 +2,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useContext } from 'react';
 
 import './Header.scss';
-import api from '../../utils/apiCaller';
 import AuthContext from '../../Context/AuthProvider';
 import logo from '../../Assets/svg/logo.svg';
 import user from '../../Assets/svg/user.svg';
@@ -326,9 +325,7 @@ const Header = () => {
                   <div className="header-middle__item">
                     <Link to="#" onClick={handleShowCart}>
                       <img src={cart} alt="cart-icon" />
-                      {cartItems.length > 0 && (
-                        <span className="cart-count">{cartItems.length}</span>
-                      )}
+                      <span className="cart-count">{cartItems.length}</span>
                     </Link>
                     <div
                       className="header-middle__cart hide_mb"
