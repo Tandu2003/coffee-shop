@@ -7,6 +7,7 @@ import { CartApi } from '../../Api/cart';
 import iconCart from '../../Assets/svg/iconCart.svg';
 import iconHeart from '../../Assets/svg/iconHeart.svg';
 import './Card.scss';
+import CartContext from '../../Context/CartProvider';
 
 const Card = ({
   title,
@@ -26,6 +27,7 @@ const Card = ({
     message: '',
   });
   const { auth } = useContext(AuthContext);
+  const { refreshCart } = useContext(CartContext);
   const navigate = useNavigate();
 
   // Check if the product is already in wishlist
@@ -60,6 +62,7 @@ const Card = ({
         message: `Added ${title} to cart!`,
       });
 
+      refreshCart();
       // Hide notification after 3 seconds
       setTimeout(() => {
         setNotification({ show: false, message: '' });

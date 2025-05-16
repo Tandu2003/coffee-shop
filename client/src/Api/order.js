@@ -7,7 +7,22 @@ const getAllOrders = async () => {
   } catch (error) {
     console.error(
       'Get all orders error:',
-      error.response?.data || error.message || error,
+      error.response?.data || error.message || error
+    );
+    throw error;
+  }
+};
+
+const createOrder = async (data) => {
+  try {
+    const res = await apiOrder.post('/orders', {
+      ...data,
+    });
+    return res.data;
+  } catch (error) {
+    console.error(
+      'Create order error:',
+      error.response?.data || error.message || error
     );
     throw error;
   }
@@ -20,7 +35,7 @@ const getOrderById = async (id) => {
   } catch (error) {
     console.error(
       'Get order error:',
-      error.response?.data || error.message || error,
+      error.response?.data || error.message || error
     );
     throw error;
   }
@@ -33,7 +48,7 @@ const updateOrderStatus = async (id, status) => {
   } catch (error) {
     console.error(
       'Update order status error:',
-      error.response?.data || error.message || error,
+      error.response?.data || error.message || error
     );
     throw error;
   }
@@ -46,7 +61,7 @@ const updateOrderPaid = async (id, isPaid) => {
   } catch (error) {
     console.error(
       'Update order paid status error:',
-      error.response?.data || error.message || error,
+      error.response?.data || error.message || error
     );
     throw error;
   }
@@ -59,7 +74,7 @@ const updateOrderDelivered = async (id, isDelivered) => {
   } catch (error) {
     console.error(
       'Update order delivered status error:',
-      error.response?.data || error.message || error,
+      error.response?.data || error.message || error
     );
     throw error;
   }
@@ -67,6 +82,7 @@ const updateOrderDelivered = async (id, isDelivered) => {
 
 export const OrderApi = {
   getAllOrders,
+  createOrder,
   getOrderById,
   updateOrderStatus,
   updateOrderPaid,
