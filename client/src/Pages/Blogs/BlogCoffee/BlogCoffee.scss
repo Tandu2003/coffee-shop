@@ -28,6 +28,16 @@ $maskBlog: url("../../../Assets/svg/blogHeaderMask.svg");
             padding-bottom: 7px;
             margin-bottom: 20px;
 
+            @media (max-width: 768px) {
+              font-size: 42px;
+              line-height: 50px;
+            }
+
+            @media (max-width: 576px) {
+              font-size: 32px;
+              line-height: 40px;
+            }
+
             &::after {
               position: absolute;
               content: "";
@@ -43,8 +53,20 @@ $maskBlog: url("../../../Assets/svg/blogHeaderMask.svg");
             font-size: 28px;
             line-height: 36px;
             color: #ffffff;
+
+            @media (max-width: 768px) {
+              font-size: 22px;
+              line-height: 30px;
+            }
+
+            @media (max-width: 576px) {
+              font-size: 18px;
+              line-height: 26px;
+            }
           }
           img {
+            max-width: 100%;
+            height: auto;
           }
         }
       }
@@ -75,16 +97,33 @@ $maskBlog: url("../../../Assets/svg/blogHeaderMask.svg");
       width: 100%;
       height: 300px;
       z-index: -1;
+
+      @media (max-width: 768px) {
+        height: 200px;
+      }
     }
   }
 
   &-roasting {
     padding: 80px 0 130px 0;
+
+    @media (max-width: 768px) {
+      padding: 60px 0 90px 0;
+    }
+
     .title-wrapper {
       max-width: 83%;
       margin: 0 auto;
       .title {
         font-size: 38px;
+
+        @media (max-width: 768px) {
+          font-size: 32px;
+        }
+
+        @media (max-width: 576px) {
+          font-size: 28px;
+        }
       }
     }
     .roast-row {
@@ -92,6 +131,17 @@ $maskBlog: url("../../../Assets/svg/blogHeaderMask.svg");
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 50px;
+
+      @media (max-width: 992px) {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+      }
+
+      @media (max-width: 576px) {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
       .roast-col {
         .img-wrap {
           position: relative;
@@ -120,6 +170,10 @@ $maskBlog: url("../../../Assets/svg/blogHeaderMask.svg");
             width: 308px;
             height: 4px;
             bottom: 3px;
+
+            @media (max-width: 992px) {
+              display: none;
+            }
           }
         }
 
@@ -134,15 +188,28 @@ $maskBlog: url("../../../Assets/svg/blogHeaderMask.svg");
           color: #000000;
           margin-bottom: 10px;
           display: block;
+
+          @media (max-width: 768px) {
+            font-size: 20px;
+            line-height: 24px;
+          }
         }
 
         ul {
+          padding-left: 20px;
+          margin-bottom: 15px;
+
           li {
             text-align: left;
             font-size: 15px;
             line-height: 28px;
-
             list-style: disc;
+            margin-bottom: 8px;
+
+            @media (max-width: 768px) {
+              font-size: 14px;
+              line-height: 24px;
+            }
           }
         }
 
@@ -206,6 +273,10 @@ $maskBlog: url("../../../Assets/svg/blogHeaderMask.svg");
   &-drinks {
     padding-bottom: 80px;
 
+    @media (max-width: 768px) {
+      padding-bottom: 60px;
+    }
+
     .slider-drinks {
       .slide-row {
         display: flex;
@@ -215,12 +286,25 @@ $maskBlog: url("../../../Assets/svg/blogHeaderMask.svg");
         .slide-col {
           display: flex;
           flex: 0 0 calc(33.33%);
+
+          @media (max-width: 992px) {
+            flex: 0 0 calc(50%);
+          }
+
+          @media (max-width: 576px) {
+            flex: 0 0 100%;
+          }
+
           img {
             width: 140px;
             transition: all 0.3s linear;
 
             &:hover {
               scale: 1.1;
+            }
+
+            @media (max-width: 768px) {
+              width: 120px;
             }
           }
           .content {
@@ -238,11 +322,21 @@ $maskBlog: url("../../../Assets/svg/blogHeaderMask.svg");
               letter-spacing: 0.04em;
               text-transform: uppercase;
               margin-bottom: 10px;
+
+              @media (max-width: 768px) {
+                font-size: 18px;
+                line-height: 22px;
+              }
             }
 
             p {
               font-size: 15px;
               line-height: 17px;
+
+              @media (max-width: 768px) {
+                font-size: 14px;
+                line-height: 16px;
+              }
             }
           }
         }
@@ -261,11 +355,21 @@ $maskBlog: url("../../../Assets/svg/blogHeaderMask.svg");
   &-grind {
     padding-bottom: 80px;
 
+    @media (max-width: 768px) {
+      padding-bottom: 60px;
+    }
+
     .grind-row {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 30px;
       margin-top: 55px;
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        margin-top: 35px;
+      }
 
       .grind-col {
         display: flex;
@@ -288,10 +392,20 @@ $maskBlog: url("../../../Assets/svg/blogHeaderMask.svg");
             letter-spacing: 0.04em;
             text-transform: uppercase;
             margin-bottom: 10px;
+
+            @media (max-width: 768px) {
+              font-size: 18px;
+              line-height: 22px;
+            }
           }
           p {
             font-size: 15px;
             line-height: 28px;
+
+            @media (max-width: 768px) {
+              font-size: 14px;
+              line-height: 24px;
+            }
           }
         }
       }
@@ -301,6 +415,14 @@ $maskBlog: url("../../../Assets/svg/blogHeaderMask.svg");
   .title-wrapper {
     .title {
       font-size: 38px;
+
+      @media (max-width: 768px) {
+        font-size: 32px;
+      }
+
+      @media (max-width: 576px) {
+        font-size: 28px;
+      }
     }
   }
 }
