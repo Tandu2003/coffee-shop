@@ -15,7 +15,6 @@ import { Auth } from '../../Api/auth';
 import { Image } from 'cloudinary-react';
 import { CartApi } from '../../Api/cart';
 import CartContext from '../../Context/CartProvider';
-import { OrderApi } from '../../Api/order';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -110,109 +109,11 @@ const Header = () => {
         handleOff();
         return;
       }
-
-      console.log('Auth user:', auth.user);
-
-      // Default shipping address - in a real app you would get this from user profile or form
-      const shippingAddress = {
-        fullName: auth.user?.username || 'Coffee Customer', // Using username as fallback
-        address: '1234 Coffee Street',
-        city: 'Coffee City',
-        postalCode: '12345',
-        country: 'USA',
-        phoneNumber: '123-456-7890',
-      }; // Calculate prices - ensure they are properly formatted numbers
-      const itemsPrice = parseFloat((cart.totalPrice || 0).toFixed(2));
-      const shippingPrice = parseFloat((itemsPrice > 40 ? 0 : 5.99).toFixed(2)); // Free shipping for orders over $40
-      const taxRate = 0.0725; // 7.25% tax rate
-      const taxPrice = parseFloat((itemsPrice * taxRate).toFixed(2));
-      const totalPrice = parseFloat(
-        (itemsPrice + shippingPrice + taxPrice).toFixed(2)
-      ); // Format the cart items for the order
-      console.log('Cart items to format:', cartItems);
-      const orderItems = cartItems.map((item) => {
-        console.log('Processing item:', item);
-
-        // Determine product type and set proper options
-        const productType =
-          item.productType ||
-          (item.options?.bagSize
-            ? 'coffee'
-            : item.options?.size
-              ? 'merch'
-              : 'coffee');
-
-        // Ensure we have all required options based on product type
-        let options = item.options || {};
-
-        if (productType === 'coffee' && (!options.bagSize || !options.grind)) {
-          // Set default options for coffee products if missing
-          options = {
-            ...options,
-            bagSize: options.bagSize || 12, // Default bag size in oz
-            grind: options.grind || 'Whole Bean', // Default grind
-          };
-        } else if (
-          productType === 'merch' &&
-          (!options.size || !options.color)
-        ) {
-          // Set default options for merch products if missing
-          options = {
-            ...options,
-            size: options.size || 'M', // Default size
-            color: options.color || 'Black', // Default color
-          };
-        }
-
-        return {
-          name: item.name,
-          quantity: item.quantity,
-          image: item.image,
-          price: item.price,
-          productId: item._id || item.productId, // Use _id or productId
-          productType: productType,
-          options: options,
-        };
-      }); // Create the order data
-      const orderData = {
-        orderItems,
-        shippingAddress,
-        paymentMethod: 'Credit Card', // Default payment method
-        itemsPrice,
-        shippingPrice,
-        taxPrice,
-        totalPrice,
-        notes: '',
-      };
-
-      // Log the final order data
-      console.log('Sending order data:', orderData);
-
-      // Create the order
-      const result = await OrderApi.createOrder(orderData);
-
-      // Clear the cart after successful order creation
-      await CartApi.clearCart();
-      refreshCart();
-
-      // Close the cart modal and show success message
-      handleOff();
-
-      // Navigate to the order confirmation page or display a success message
-      setNotification({
-        show: true,
-        message: `Order created successfully!`,
-      });
-
-      setTimeout(() => {
-        setNotification({ show: false, message: '' });
-      }, 3000);
+      // Navigate to the OrderPage
+      navigate('/order');
+      handleOff(); // Close any open modals or menus
     } catch (error) {
-      console.error('Error creating order:', error);
-      const errorMessage =
-        error.response?.data?.message || error.message || 'Unknown error';
-      console.error('Error details:', error.response?.data);
-      alert('Failed to create order: ' + errorMessage);
+      console.error('Error navigating to order page:', error);
     }
   };
 
