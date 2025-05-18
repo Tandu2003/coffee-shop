@@ -27,8 +27,6 @@ const ChatBot = () => {
   // Removed unused dragControls
 
   useEffect(() => {
-    // Initialize socket connection
-    // The actual connection to the chatbot service will be proxied by the API Gateway
     socket = io(SOCKET_SERVER_URL, {
       transports: ['websocket', 'polling'], // Specify transports
     });
@@ -38,15 +36,17 @@ const ChatBot = () => {
     });
 
     socket.on('message', (message) => {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          ...message,
-          id: message.id || Date.now() + Math.random(),
-          timestamp: message.timestamp || new Date().toISOString(),
-        },
-      ]);
-      setLoading(false); // Stop loading when bot responds
+      if (message.sender === 'bot') {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          {
+            ...message,
+            id: message.id || Date.now() + Math.random(),
+            timestamp: message.timestamp || new Date().toISOString(),
+          },
+        ]);
+        setLoading(false); // Bot has responded
+      }
     });
 
     socket.on('disconnect', () => {
@@ -114,7 +114,7 @@ const ChatBot = () => {
   const clearChat = () => {
     const initialMessage = {
       id: Date.now(),
-      text: 'Xin chào! Tôi là trợ lý AI của quán cà phê. Bạn cần tôi giúp gì hôm nay? (Đề xuất sản phẩm, thông tin về đồ uống, hoặc giúp đỡ đặt hàng)',
+      text: 'Hi there! How can I assist you today?',
       sender: 'bot',
       timestamp: new Date().toISOString(),
     };
@@ -190,7 +190,7 @@ const ChatBot = () => {
             </div>
             <div className="chat-controls">
               <button className="clear-button" onClick={clearChat}>
-                🗑️
+                🔃
               </button>
               <button className="close-button" onClick={toggleChat}>
                 ×
@@ -263,14 +263,16 @@ const ChatBot = () => {
 
           {/* Chat input */}
           <div className="chat-input">
-            <input
+            <textarea
+              className="input-textarea"
+              rows="1"
               type="text"
               placeholder="Type your message..."
               value={inputText}
               onChange={handleInputChange}
               onKeyPress={handleKeyPress}
             />
-            <button onClick={sendMessage}>Send</button>
+            {/* <button onClick={sendMessage}>Send</button> */}
           </div>
         </motion.div>
       )}
