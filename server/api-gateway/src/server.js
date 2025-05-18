@@ -17,15 +17,16 @@ const merchRoutes = require('./routes/merch.routes');
 const productRoutes = require('./routes/product.routes');
 const cartRoutes = require('./routes/cart.routes');
 const orderRoutes = require('./routes/order.routes');
+const chatbotRoutes = require('./routes/chatbot.routes'); // Added chatbot routes
 
 // Create Express app
 const app = express();
 
 // Apply middleware
-app.use(helmet());  // Security headers
-app.use(cors);      // CORS configuration
-app.use(limiter);   // Rate limiting
-app.use(logger);    // Request logging
+app.use(helmet()); // Security headers
+app.use(cors); // CORS configuration
+app.use(limiter); // Rate limiting
+app.use(logger); // Request logging
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
@@ -44,23 +45,23 @@ if (!fs.existsSync(protosDir)) {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'up', 
+  res.status(200).json({
+    status: 'up',
     timestamp: new Date(),
     services: {
       product: {
         url: config.services.product.restUrl,
-        grpc: config.services.product.grpcUrl
+        grpc: config.services.product.grpcUrl,
       },
       merch: {
         url: config.services.merch.restUrl,
-        grpc: config.services.merch.grpcUrl
+        grpc: config.services.merch.grpcUrl,
       },
       auth: {
         url: config.services.auth.restUrl,
-        grpc: config.services.auth.grpcUrl
-      }
-    }
+        grpc: config.services.auth.grpcUrl,
+      },
+    },
   });
 });
 
@@ -68,8 +69,9 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/merch', merchRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/cart', cartRoutes); 
+app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/chatbot', chatbotRoutes); // Added chatbot routes usage
 
 // 404 handler
 app.use((req, res) => {
@@ -82,7 +84,9 @@ app.use(errorHandler);
 // Start server
 const PORT = config.port || 3001;
 app.listen(PORT, () => {
-  winstonLogger.info(`API Gateway running on port ${PORT} in ${config.environment} mode`);
+  winstonLogger.info(
+    `API Gateway running on port ${PORT} in ${config.environment} mode`
+  );
 });
 
 module.exports = app;
