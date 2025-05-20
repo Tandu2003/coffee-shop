@@ -9,42 +9,37 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: '*', // Allow all origins for now, adjust in production
+    origin: '*',
   },
 });
 
 const PRODUCT_SERVICE_URL =
-  process.env.PRODUCT_SERVICE_URL || 'http://localhost:5002/api/products'; // Replace with actual URL
+  process.env.PRODUCT_SERVICE_URL || 'http://localhost:5002/api/products';
 const MERCH_SERVICE_URL =
-  process.env.MERCH_SERVICE_URL || 'http://localhost:5003/api/merch'; // Replace with actual URL
+  process.env.MERCH_SERVICE_URL || 'http://localhost:5003/api/merch';
 
-// Access your API key as an environment variable
 if (!process.env.GEMINI_API_KEY) {
   console.error(
     'Error: GEMINI_API_KEY is not set in the environment variables.'
   );
-  process.exit(1); // Stop the service if the API key is missing
+  process.exit(1);
 }
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
 let products = [];
 let merch = [];
 
-// Fetch initial product and merch data
 const fetchData = async () => {
   try {
     console.log('Fetching product and merch data...');
     const [productRes, merchRes] = await Promise.all([
-      axios.get('http://localhost:5002/api/products'),
-      axios.get('http://localhost:5003/api/merch'),
+      axios.get(PRODUCT_SERVICE_URL),
+      axios.get(MERCH_SERVICE_URL),
     ]);
 
     products = productRes.data || [];
     merch = merchRes.data || [];
-
-    console.log('Products:', products);
-    console.log('Merch:', merch);
 
     console.log('Products and merch data loaded');
   } catch (error) {
@@ -52,68 +47,116 @@ const fetchData = async () => {
   }
 };
 
-fetchData(); // Load data on server start
-setInterval(fetchData, 60 * 60 * 1000); // Refresh data every hour
+fetchData();
+setInterval(fetchData, 60 * 60 * 1000);
+
+const conversationHistories = {};
 
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
+  conversationHistories[socket.id] = [];
 
+  const initialBotMessage =
+    'Hello! I am your sales assistant. How can I help you find the perfect coffee or merch today?';
+  conversationHistories[socket.id].push({
+    sender: 'bot',
+    text: initialBotMessage,
+  });
   socket.emit('message', {
     sender: 'bot',
-    text: 'Hello! I am your sales assistant. How can I help you find the perfect coffee or merch today?',
+    text: initialBotMessage,
   });
 
   socket.on('sendMessage', async (message) => {
     console.log('Message from client:', message);
-    socket.emit('message', { sender: 'user', text: message.text }); // Echo user message
+    conversationHistories[socket.id].push({
+      sender: 'user',
+      text: message.text,
+    });
+    socket.emit('message', { sender: 'user', text: message.text });
 
     try {
-      // const botResponse = await generateBotResponse(message.text); // Old simple response
-      const botResponse = await generateGeminiResponse(
+      const botResponseData = await generateGeminiResponse(
         message.text,
         products,
-        merch
-      ); // New Gemini response
-      socket.emit('message', { sender: 'bot', text: botResponse });
-    } catch (error) {
-      console.error('Error processing message:', error);
+        merch,
+        conversationHistories[socket.id]
+      );
+      conversationHistories[socket.id].push({
+        sender: 'bot',
+        text: botResponseData.text,
+        recommendations: botResponseData.recommendations,
+      });
       socket.emit('message', {
         sender: 'bot',
-        text: "I'm having a little trouble right now. Please try again later.",
+        text: botResponseData.text,
+        recommendations: botResponseData.recommendations,
+      });
+    } catch (error) {
+      console.error('Error processing message:', error);
+      const errorMessage =
+        "I'm having a little trouble right now. Please try again later.";
+      socket.emit('message', {
+        sender: 'bot',
+        text: errorMessage,
       });
     }
   });
 
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);
+    delete conversationHistories[socket.id];
   });
 });
 
-// Old generateBotResponse function (can be removed or kept for fallback)
-/*
-const generateBotResponse = async (userMessage) => {
-  // ... (previous simple logic)
-};
-*/
-
-const generateGeminiResponse = async (userMessage, productList, merchList) => {
+const generateGeminiResponse = async (
+  userMessage,
+  productList,
+  merchList,
+  history
+) => {
   const productInfo =
     productList.length > 0
       ? productList
-          .map((p) => `- ${p.name}: ${p.description} (Price: $${p.price})`)
-          .join('\n')
+          .map(
+            (p) =>
+              `- ProductID: ${p._id}, Name: ${p.name}, Image: ${p.imageDisplay}, Description: ${p.description} (Price: $${p.price})`
+          )
+          .join('\\n')
       : 'No products currently listed.';
   const merchInfo =
     merchList.length > 0
       ? merchList
-          .map((m) => `- ${m.name}: ${m.description} (Price: $${m.price})`)
-          .join('\n')
+          .map(
+            (m) =>
+              `- ProductID: ${m._id}, Name: ${m.name}, Image: ${m.imageDisplay}, Description: ${m.description} (Price: $${m.price})`
+          )
+          .join('\\n')
       : 'No merchandise currently listed.';
+
+  const formattedHistory = history
+    .map(
+      (msg) =>
+        `${msg.sender === 'user' ? 'User' : 'Sales Assistant'}: ${msg.text}`
+    )
+    .join('\\\\n');
 
   const prompt = `You are a friendly and helpful sales assistant for "Ok But First Coffee", a shop that sells coffee and merchandise.
 Your goal is to assist customers, answer their questions about products, and help them with the buying process in a natural conversational tone.
 Do not make up products or information not present in the lists below.
 If a user asks a question that is not related to coffee, merchandise, or the shop, politely state that you can only help with shop-related inquiries.
+Please respond in the same language as the user's message.
+
+When you suggest specific products from the lists, you MUST also append a special JSON block at the VERY END of your response. This JSON block must start with ###PRODUCT_JSON_START### and end with ###PRODUCT_JSON_END###. The content between these delimiters must be a valid JSON array of objects. Each object in the array should represent a suggested product and include ONLY the fields: "id" (the ProductID from the provided list), "name", "image", type (type of product 'merch' or 'product') and "price". Your main conversational response should be natural and friendly, and should not explicitly mention this JSON block or the delimiters.
+Example of how to format when suggesting products:
+"I recommend our Ethiopian Yirgacheffe for a bright, citrusy coffee. We also have some lovely branded mugs that would go perfectly with it!
+###PRODUCT_JSON_START###
+[{"id": "67ffdb8f565c1bcb0b6f02a1", "type": "merch", "image": "nzumgnvrkyseanxhub7k", "name": "Ethiopian Yirgacheffe", "price": 15.99}, {"productId": "merch_002", "name": "Branded Coffee Mug", "price": 12.00}]
+###PRODUCT_JSON_END###"
+If no specific products are suggested, or if the query is off-topic, DO NOT include the JSON block or delimiters. Only include it when making concrete product suggestions from the lists.
+
+Conversation History:
+${formattedHistory}
 
 Available Products:
 ${productInfo}
@@ -127,17 +170,38 @@ Sales Assistant:`;
 
   try {
     const result = await model.generateContent(prompt);
-    const response = await result.response;
-    console.log({ response });
-    const text = response.text();
-    return text;
+    const response = result.response;
+    let rawText = response.text();
+    let recommendations = null;
+
+    const jsonStartDelimiter = '###PRODUCT_JSON_START###';
+    const jsonEndDelimiter = '###PRODUCT_JSON_END###';
+
+    const startIndex = rawText.indexOf(jsonStartDelimiter);
+    const endIndex = rawText.indexOf(jsonEndDelimiter);
+
+    if (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
+      const jsonString = rawText
+        .substring(startIndex + jsonStartDelimiter.length, endIndex)
+        .trim();
+      try {
+        recommendations = JSON.parse(jsonString);
+        rawText = rawText.substring(0, startIndex).trim();
+      } catch (e) {
+        console.error('Error parsing product JSON from AI response:', e);
+      }
+    }
+    return { text: rawText, recommendations };
   } catch (error) {
     console.error('Error generating response from Gemini:', error.message);
-    // Check for specific error types if the SDK provides them, e.g., API key issues, rate limits
     if (error.message && error.message.includes('API key not valid')) {
-      return 'There seems to be an issue with my connection to the knowledge base. Please tell the site administrator to check the API key.';
+      return {
+        text: 'There seems to be an issue with my connection to the knowledge base. Please tell the site administrator to check the API key.',
+      };
     }
-    return "I'm currently experiencing a high volume of requests or a technical difficulty. Please try again in a moment.";
+    return {
+      text: "I'm currently experiencing a high volume of requests or a technical difficulty. Please try again in a moment.",
+    };
   }
 };
 
