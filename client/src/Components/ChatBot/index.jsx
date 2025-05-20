@@ -103,6 +103,7 @@ const ChatBot = () => {
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && inputText.trim()) {
+      e.preventDefault();
       sendMessage();
     }
   };
@@ -270,7 +271,6 @@ const ChatBot = () => {
               value={inputText}
               onChange={handleInputChange}
               onKeyPress={handleKeyPress}
-              
             />
           </div>
         </motion.div>
