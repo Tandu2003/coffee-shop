@@ -117,6 +117,19 @@
     gap: 10px;
   }
 
+  .clear-button {
+    background: #fff !important;
+    border-radius: 99999px;
+    opacity: 1 !important;
+    width: 20px !important;
+    height: 20px !important;
+
+    img {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
   .clear-button,
   .close-button {
     background: none;
@@ -177,12 +190,14 @@
     display: flex;
     max-width: 85%;
     text-align: left;
+    align-items: flex-end;
 
     .message-avatar {
       width: 30px;
       height: 30px;
       flex-shrink: 0;
       margin-right: 8px;
+      margin-bottom: 20px;
 
       img {
         width: 100%;
@@ -190,6 +205,10 @@
         border-radius: 50%;
         object-fit: cover;
       }
+    }
+
+    .loading {
+      margin-bottom: 20px;
     }
 
     .message-content {
@@ -243,24 +262,7 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
-  max-height: 320px;
-  overflow-y: auto;
   padding-right: 5px;
-
-  /* Custom scrollbar */
-  &::-webkit-scrollbar {
-    width: 5px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 5px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #000;
-    border-radius: 5px;
-  }
 
   .recommended-product {
     background-color: #fff;
