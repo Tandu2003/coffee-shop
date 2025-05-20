@@ -333,7 +333,7 @@ const Header = () => {
                   <div className="hide_pc"></div>
                   <div className="header-middle__item">
                     <Link to="#" onClick={handleShowCart}>
-                      <img src={cart} alt="cart-icon" />
+                      <img src={cartIcon} alt="cart-icon" />
                       <span className="cart-count">{cartItems.length}</span>
                     </Link>
                     <div
