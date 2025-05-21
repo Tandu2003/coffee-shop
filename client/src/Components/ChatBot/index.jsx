@@ -136,8 +136,6 @@ const ChatBot = () => {
     setLoading(true);
   };
 
-  console.log({ inputText });
-
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
