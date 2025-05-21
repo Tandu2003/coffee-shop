@@ -3,18 +3,20 @@ version: '3.8'
 services:
   # Frontend client service
   client:
-    build: 
+    build:
       context: ./client
       dockerfile: Dockerfile
     container_name: okbf-client
     ports:
-      - "3000:80"
+      - '3000:80'
     depends_on:
       - api-gateway
       - auth-service
       - product-service
       - merch-service
       - cart-service
+      - order-service
+      - chatbot-service
     environment:
       - NODE_ENV=production
       # Đảm bảo port cho auth-service là 5001, không phải 5000
@@ -23,6 +25,8 @@ services:
       - REACT_APP_API_PRODUCT=http://localhost:5002
       - REACT_APP_API_MERCH=http://localhost:5003
       - REACT_APP_API_CART=http://localhost:5004
+      - REACT_APP_API_ORDER=http://localhost:5005
+      - REACT_APP_API_CHATBOT=http://localhost:5006
     networks:
       - frontend-network
       - backend-network
@@ -30,17 +34,19 @@ services:
 
   # API Gateway service
   api-gateway:
-    build: 
+    build:
       context: ./server/api-gateway
       dockerfile: Dockerfile
     container_name: okbf-api-gateway
     ports:
-      - "3001:3001"
+      - '3001:3001'
     depends_on:
       - auth-service
       - product-service
       - merch-service
       - cart-service
+      - order-service
+      - chatbot-service
     environment:
       - PORT=3001
       - NODE_ENV=production
@@ -48,10 +54,12 @@ services:
       - MERCH_SERVICE_URL=http://merch-service:5003
       - AUTH_SERVICE_URL=http://auth-service:5001
       - CART_SERVICE_URL=http://cart-service:5004
+      - ORDER_SERVICE_URL=http://order-service:5005
+      - CHATBOT_SERVICE_URL=http://chatbot-service:5006
       - PRODUCT_GRPC_URL=product-service:50051
       - MERCH_GRPC_URL=merch-service:50052
       - AUTH_GRPC_URL=auth-service:50053
-      - JWT_SECRET=${JWT_SECRET:-default_jwt_secret_for_development_only}
+      - JWT_SECRET=24926e4536bec76a9b996cccf13caff461b96f7eeab756d95a7c51dedc8e8b8e419acaad1498aa6709e82eaa5f25e15e9b45e8ca3da34aa304062aaee128593ebb0083cda148c19937ad42245598c038762a8c7082e111343ba582a391703b63fc4933637d9a4fab937a087e96487a11326b300429691a18037c89ac30474188f207567bbf9cf5afd74f5c8c4ce46b2fd2d8a4c5c432e22d36ffa8da508fbcf5df7572bc77ef12294d321ebc651163f10088f381f8b35fcd74bdb9ab51952bf1ba57ba3f18cf9ae39d4fac93d859ccb60ff09e9fbd765370f8edb0b37143cd536bd89bc3135dabbe364586b98f5e47d6812bc2aeb4cce7765575419ba3ee5ed1
       - RATE_LIMIT_WINDOW_MS=900000
       - RATE_LIMIT_MAX_REQUESTS=100
       - ALLOWED_ORIGINS=http://localhost:3000
@@ -62,7 +70,7 @@ services:
       - backend-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:3001/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -70,32 +78,32 @@ services:
 
   # Auth microservice
   auth-service:
-    build: 
+    build:
       context: ./server/services/auth-service
       dockerfile: Dockerfile
     container_name: okbf-auth-service
     ports:
-      - "5001:5001"  # Expose port to host for direct access
+      - '5001:5001' # Expose port to host for direct access
     expose:
-      - "5001"
-      - "50053"
+      - '5001'
+      - '50053'
     environment:
       - PORT=5001
+      - CLIENT_URL=http://localhost:3000
       - MONGO_URI=mongodb+srv://coffeedb:_aecc%23KTTKPM@coffeeshop.eo6bc.mongodb.net/coffeeshopdb?retryWrites=true&w=majority&appName=CoffeeShop
       - KEY_SECRET=a7d9f2b8c6e3d1a4f5b7c9e6d2a8f3b4
       - NODE_ENV=production
-      - AUTH_EMAIL=${AUTH_EMAIL}
-      - AUTH_PASS=${AUTH_PASS}
+      - AUTH_EMAIL=phantronghau.dev@gmail.com
+      - AUTH_PASS=tqdr twza uwnm xcoe
       - JWT_SECRET=24926e4536bec76a9b996cccf13caff461b96f7eeab756d95a7c51dedc8e8b8e419acaad1498aa6709e82eaa5f25e15e9b45e8ca3da34aa304062aaee128593ebb0083cda148c19937ad42245598c038762a8c7082e111343ba582a391703b63fc4933637d9a4fab937a087e96487a11326b300429691a18037c89ac30474188f207567bbf9cf5afd74f5c8c4ce46b2fd2d8a4c5c432e22d36ffa8da508fbcf5df7572bc77ef12294d321ebc651163f10088f381f8b35fcd74bdb9ab51952bf1ba57ba3f18cf9ae39d4fac93d859ccb60ff09e9fbd765370f8edb0b37143cd536bd89bc3135dabbe364586b98f5e47d6812bc2aeb4cce7765575419ba3ee5ed1
-    depends_on: []  # Remove MongoDB dependency as we're using cloud MongoDB
     volumes:
       - auth_service_logs:/app/logs
     networks:
       - backend-network
-      - frontend-network  # Add frontend network to allow direct access
+      - frontend-network # Add frontend network to allow direct access
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "node", "healthcheck.js"]
+      test: ['CMD', 'node', 'healthcheck.js']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -103,32 +111,32 @@ services:
 
   # Product microservice
   product-service:
-    build: 
+    build:
       context: ./server/services/product-service
       dockerfile: Dockerfile
     container_name: okbf-product-service
     ports:
-      - "5002:5002"  # Expose port to host for direct access
+      - '5002:5002' # Expose port to host for direct access
     expose:
-      - "5002"
-      - "50051"
+      - '5002'
+      - '50051'
     environment:
       - PORT=5002
       - MONGO_URI=mongodb+srv://coffeedb:_aecc%23KTTKPM@coffeeshop.eo6bc.mongodb.net/coffeeshopdb?retryWrites=true&w=majority&appName=CoffeeShop
+      - KEY_SECRET=a7d9f2b8c6e3d1a4f5b7c9e6d2a8f3b4
       - NODE_ENV=production
-      - CLOUDINARY_NAME=${CLOUDINARY_NAME}
-      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
-      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
-    depends_on: []  # Remove MongoDB dependency as we're using cloud MongoDB
+      - CLOUDINARY_NAME=ok-but-first-coffee
+      - CLOUDINARY_API_KEY=879399268965881
+      - CLOUDINARY_API_SECRET=lvEWLW73LskQGLrSPu3EY74ivIQ
     volumes:
       - product_service_logs:/app/logs
     networks:
       - backend-network
       - database-network
-      - frontend-network  # Add frontend network to allow direct access
+      - frontend-network # Add frontend network to allow direct access
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "node", "healthcheck.js"]
+      test: ['CMD', 'node', 'healthcheck.js']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -136,31 +144,31 @@ services:
 
   # Merchandise microservice
   merch-service:
-    build: 
+    build:
       context: ./server/services/merch-service
       dockerfile: Dockerfile
     container_name: okbf-merch-service
     ports:
-      - "5003:5003"  # Expose port to host for direct access
+      - '5003:5003' # Expose port to host for direct access
     expose:
-      - "5003" 
-      - "50052"
+      - '5003'
+      - '50052'
     environment:
       - PORT=5003
       - MONGO_URI=mongodb+srv://coffeedb:_aecc%23KTTKPM@coffeeshop.eo6bc.mongodb.net/coffeeshopdb?retryWrites=true&w=majority&appName=CoffeeShop
+      - KEY_SECRET=a7d9f2b8c6e3d1a4f5b7c9e6d2a8f3b4
       - NODE_ENV=production
-      - CLOUDINARY_NAME=${CLOUDINARY_NAME}
-      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
-      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
-    depends_on: []  # Remove MongoDB dependency as we're using cloud MongoDB
+      - CLOUDINARY_NAME=ok-but-first-coffee
+      - CLOUDINARY_API_KEY=879399268965881
+      - CLOUDINARY_API_SECRET=lvEWLW73LskQGLrSPu3EY74ivIQ
     volumes:
       - merch_service_logs:/app/logs
     networks:
       - backend-network
-      - frontend-network  # Keep only necessary networks
+      - frontend-network # Keep only necessary networks
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "node", "healthcheck.js"]
+      test: ['CMD', 'node', 'healthcheck.js']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -173,20 +181,78 @@ services:
       dockerfile: Dockerfile
     container_name: okbf-cart-service
     ports:
-      - "5004:5004"  # Expose port to host for direct access
+      - '5004:5004' # Expose port to host for direct access
     expose:
-      - "5004"
+      - '5004'
     environment:
       - PORT=5004
       - MONGO_URI=mongodb+srv://coffeedb:_aecc%23KTTKPM@coffeeshop.eo6bc.mongodb.net/coffeeshopdb?retryWrites=true&w=majority&appName=CoffeeShop
       - NODE_ENV=production
-      - JWT_SECRET=your_jwt_secret_key_here
+      - CLIENT_URL=http://localhost:3000
+      - KEY_SECRET=a7d9f2b8c6e3d1a4f5b7c9e6d2a8f3b4
     volumes:
       - cart_service_logs:/app/logs
     networks:
       - backend-network
       - frontend-network
     restart: unless-stopped
+
+  # Order microservice
+  order-service:
+    build:
+      context: ./server/services/order-service
+      dockerfile: Dockerfile
+    container_name: okbf-order-service
+    ports:
+      - '5005:5005'
+    expose:
+      - '5005'
+    environment:
+      - PORT=5005
+      - MONGO_URI=mongodb+srv://coffeedb:_aecc%23KTTKPM@coffeeshop.eo6bc.mongodb.net/coffeeshopdb?retryWrites=true&w=majority&appName=CoffeeShop
+      - NODE_ENV=production
+      - CLIENT_URL=http://localhost:3000
+      - KEY_SECRET=a7d9f2b8c6e3d1a4f5b7c9e6d2a8f3b4
+      - CART_SERVICE_URL=http://cart-service:5004
+    volumes:
+      - order_service_logs:/app/logs
+    networks:
+      - backend-network
+      - frontend-network
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'node', 'healthcheck.js']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # Chatbot microservice
+  chatbot-service:
+    build:
+      context: ./server/services/chatbot-service
+      dockerfile: Dockerfile
+    container_name: okbf-chatbot-service
+    ports:
+      - '5006:5006'
+    expose:
+      - '5006'
+    environment:
+      - PORT=5006
+      - NODE_ENV=production
+      - GEMINI_API_KEY=AIzaSyDnUAtq59j7TdVVAr_ooN0eMSrji9pzM08
+    volumes:
+      - chatbot_service_logs:/app/logs
+    networks:
+      - backend-network
+      - frontend-network
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'node', 'healthcheck.js']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
   # MongoDB database
   mongodb:
@@ -197,7 +263,7 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=_aecc#KTTKPM
       - MONGO_INITDB_DATABASE=coffeeshopdb
     ports:
-      - "27017:27017"
+      - '27017:27017'
     volumes:
       - mongodb_data:/data/db
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
@@ -228,3 +294,5 @@ volumes:
   product_service_logs:
   merch_service_logs:
   cart_service_logs:
+  order_service_logs:
+  chatbot_service_logs:
