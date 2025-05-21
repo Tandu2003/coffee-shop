@@ -32,21 +32,73 @@ OK BUT FIRST COFFEE is a full-stack e-commerce application built with React.js a
 
 The application follows a microservices architecture:
 
+```mermaid
+graph TD
+    subgraph "User Interface"
+        Client["React Client Application"]
+    end
+
+    subgraph "API Layer"
+        APIGateway["API Gateway (Express.js - Port 3001)"]
+    end
+
+    subgraph "Backend Services"
+        AuthService["Auth Service (Node.js - Port 5001)"]
+        ProductService["Product Service (Node.js - Port 5002)"]
+        MerchService["Merch Service (Node.js - Port 5003)"]
+        CartService["Cart Service (Node.js - Port 5004)"]
+        OrderService["Order Service (Node.js - Port 5005)"]
+        ChatbotService["Chatbot Service (Node.js/Socket.IO - Port 5006)"]
+    end
+
+    subgraph "Data Stores"
+        UserDB[("User Database")]
+        ProductDB[("Product Database")]
+        MerchDB[("Merchandise Database")]
+        CartDB[("Cart Database/Cache")]
+        OrderDB[("Order Database")]
+    end
+
+    Client --> APIGateway
+
+    APIGateway -->|"HTTP/gRPC"| AuthService
+    APIGateway -->|"HTTP/gRPC"| ProductService
+    APIGateway -->|"HTTP/gRPC"| MerchService
+    APIGateway -->|"HTTP/gRPC"| CartService
+    APIGateway -->|"HTTP/gRPC"| OrderService
+    APIGateway -->|"WebSocket/HTTP"| ChatbotService
+
+    AuthService --- UserDB
+    ProductService --- ProductDB
+    MerchService --- MerchDB
+    CartService --- CartDB
+    OrderService --- OrderDB
+
+    OrderService -->|"Updates"| ProductService
+    OrderService -->|"Updates"| MerchService
+    CartService -->|"Reads"| ProductService
+    CartService -->|"Reads"| MerchService
+    ChatbotService -->|"May Read"| MerchService
+    ChatbotService -->|"May Read"| ProductService
 ```
-                   ┌─────────────────┐
-                   │                 │
-  React Client ────►   API Gateway   │
-                   │    (port 3001)  │
-                   └────────┬────────┘
-                            │
-              ┌─────────────┼─────────────┐
-              │             │             │
-    ┌─────────▼────┐ ┌──────▼───────┐ ┌───▼──────────┐
-    │  Product     │ │  Merch       │ │  Auth        │
-    │  Service     │ │  Service     │ │  Service     │
-    │  (port 5002) │ │  (port 5003) │ │  (port 5001) │
-    └──────────────┘ └──────────────┘ └──────────────┘
-```
+
+**Key Components:**
+
+- **React Client**: The single-page application that users interact with.
+- **API Gateway**: The single entry point for all client requests. It routes requests to the appropriate backend microservice and handles cross-cutting concerns like authentication (via `AuthService`), rate limiting, and logging.
+- **Auth Service**: Manages user authentication, registration, and token generation.
+- **Product Service**: Manages the catalog of coffee products, including details, pricing, and inventory.
+- **Merch Service**: Manages the catalog of non-coffee merchandise.
+- **Cart Service**: Manages user shopping carts.
+- **Order Service**: Handles order creation, processing, and history. It coordinates with Product and Merch services for inventory updates.
+- **Chatbot Service**: Provides real-time chat functionality, potentially integrating with other services to answer queries.
+- **Databases**: Each service (or a logical group of services) typically has its own database to ensure loose coupling.
+
+**Communication:**
+
+- The Client communicates with the API Gateway primarily via RESTful HTTP requests.
+- The API Gateway communicates with backend services using a mix of RESTful HTTP and gRPC (for performance-critical internal communication).
+- The Chatbot Service uses WebSockets (Socket.IO) for real-time communication with the client, proxied through the API Gateway.
 
 ## Tech Stack
 
