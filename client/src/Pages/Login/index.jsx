@@ -43,7 +43,10 @@ const Login = () => {
       const result = await Auth.signup(newAccount);
       setPost(result?.message);
     } catch (error) {
-      setPost(error?.response?.data?.message);
+      setPost(
+        error?.response?.data?.message ||
+          'An error occurred during registration',
+      );
     }
   };
 
@@ -64,7 +67,9 @@ const Login = () => {
         navigate('/account');
       }
     } catch (error) {
-      setPost1(error?.response?.data?.message);
+      setPost1(
+        error?.response?.data?.message || 'An error occurred during login',
+      );
       setPost('');
     }
   };
@@ -122,7 +127,18 @@ const Login = () => {
                         />
                       </div>
                       <div className="form-group">
-                        <p>{post1}</p>
+                        <p
+                          style={{
+                            color:
+                              post.search('successfully') === -1
+                                ? post.search('Loading') === -1
+                                  ? 'red'
+                                  : 'black'
+                                : 'green',
+                          }}
+                        >
+                          {post1}
+                        </p>
                       </div>
 
                       <div className="actions">
