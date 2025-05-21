@@ -1,6 +1,7 @@
 const Order = require('../models/order.model');
 const OrderItem = require('../models/orderItem.model');
 const mongoose = require('mongoose');
+const axios = require('axios');
 
 class OrderController {
   // [GET] /api/orders
@@ -191,9 +192,21 @@ class OrderController {
       await session.commitTransaction();
       session.endSession();
 
+      // Clear the cart after successful order creation
+      try {
+        await axios.delete(`${process.env.CART_SERVICE_URL}/api/cart`, {
+          headers: {
+            Cookie: req.headers.cookie, // Forward the authentication cookie
+          },
+        });
+      } catch (error) {
+        console.error('Error clearing cart:', error);
+        // Don't fail the order creation if cart clearing fails
+      }
+
       // Populate order items to return complete order details
       const populatedOrder = await Order.findById(createdOrder._id).populate(
-        'orderItems'
+        'orderItems',
       );
 
       res.status(201).json(populatedOrder);
@@ -239,7 +252,7 @@ class OrderController {
       const updatedOrder = await Order.findByIdAndUpdate(
         id,
         { status },
-        { new: true }
+        { new: true },
       ).populate('orderItems');
 
       res.status(200).json(updatedOrder);
@@ -282,7 +295,7 @@ class OrderController {
           paidAt: Date.now(),
           paymentResult,
         },
-        { new: true }
+        { new: true },
       ).populate('orderItems');
 
       res.status(200).json(updatedOrder);
@@ -325,7 +338,7 @@ class OrderController {
           status: 'Delivered',
           trackingNumber,
         },
-        { new: true }
+        { new: true },
       ).populate('orderItems');
 
       res.status(200).json(updatedOrder);
