@@ -144,7 +144,14 @@ const Header = () => {
         handleOff();
       }
     } catch (error) {
-      console.log(error);
+      setPost(
+        error?.response?.data?.message || 'An error occurred during login',
+      );
+      setNotification({
+        show: true,
+        message:
+          error?.response?.data?.message || 'An error occurred during login',
+      });
     }
   };
 
@@ -165,8 +172,45 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleNavigation);
   }, []);
 
+  // Add notification component to show errors
+  const Notification = () => {
+    if (!notification.show) return null;
+
+    return (
+      <div
+        className="notification"
+        style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          padding: '15px 25px',
+          backgroundColor: '#ff4444',
+          color: 'white',
+          borderRadius: '4px',
+          zIndex: 1000,
+          boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+        }}
+      >
+        {notification.message}
+        <button
+          onClick={() => setNotification({ show: false, message: '' })}
+          style={{
+            marginLeft: '10px',
+            background: 'none',
+            border: 'none',
+            color: 'white',
+            cursor: 'pointer',
+          }}
+        >
+          ×
+        </button>
+      </div>
+    );
+  };
+
   return (
     <>
+      <Notification />
       <header>
         <div className="header">
           <div className="announcement-bar">
@@ -408,7 +452,7 @@ const Header = () => {
                                         <span className="item-total">
                                           $
                                           {(item.price * item.quantity).toFixed(
-                                            2
+                                            2,
                                           )}
                                         </span>
                                       </div>
@@ -920,18 +964,6 @@ const Header = () => {
           ></div>
         </div>
       </header>
-      {notification.show && (
-        <div className="cart-notification">
-          <div className="notification-content">
-            <span>{notification.message}</span>
-            <button
-              onClick={() => setNotification({ show: false, message: '' })}
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
     </>
   );
 };

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { OrderApi } from '../Api/order';
 import CartContext from '../Context/CartProvider';
 import AuthContext from '../Context/AuthProvider';
+import { withRetry } from '../utils/retryHandler';
 
 const paymentMethods = [
   'Credit Card',
@@ -51,7 +52,7 @@ const OrderPage = () => {
     const taxRate = 0.0725;
     const taxPrice = parseFloat((itemsPrice * taxRate).toFixed(2));
     const totalPrice = parseFloat(
-      (itemsPrice + shippingPrice + taxPrice).toFixed(2)
+      (itemsPrice + shippingPrice + taxPrice).toFixed(2),
     );
 
     console.log({ auth });
@@ -107,7 +108,21 @@ const OrderPage = () => {
     };
 
     try {
-      await OrderApi.createOrder(orderData);
+      setNotification({
+        show: true,
+        message: 'Processing your order...',
+      });
+
+      await withRetry(
+        () => OrderApi.createOrder(orderData),
+        (errorMessage) => {
+          setNotification({
+            show: true,
+            message: errorMessage,
+          });
+        },
+      );
+
       setNotification({
         show: true,
         message: 'Order placed successfully!',
@@ -117,7 +132,12 @@ const OrderPage = () => {
       // Show notification if you have a system for it
     } catch (error) {
       console.error('Error creating order:', error);
-      // Show error notification
+      setNotification({
+        show: true,
+        message:
+          error?.response?.data?.message ||
+          'Failed to place order. Please try again.',
+      });
     }
   };
 
