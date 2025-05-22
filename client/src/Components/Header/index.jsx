@@ -147,11 +147,6 @@ const Header = () => {
       setPost(
         error?.response?.data?.message || 'An error occurred during login',
       );
-      setNotification({
-        show: true,
-        message:
-          error?.response?.data?.message || 'An error occurred during login',
-      });
     }
   };
 
